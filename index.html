@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Number Ninja ⚡</title>
+<style>
+  :root {
+    --bg1: #1e1b4b;
+    --bg2: #4c1d95;
+    --accent: #fbbf24;
+    --accent2: #34d399;
+    --wrong: #f87171;
+    --card: rgba(255,255,255,0.08);
+    --text: #f8fafc;
+    --sub: #c7d2fe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Verdana, sans-serif;
+    background: radial-gradient(circle at top, var(--bg2), var(--bg1) 70%);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+  }
+  .app { width: 100%; max-width: 560px; }
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin: 8px 0 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle { text-align: center; color: var(--sub); margin-bottom: 20px; font-size: 0.95rem; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 20px;
+    backdrop-filter: blur(6px);
+    margin-bottom: 14px;
+  }
+
+  .topic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .topic-btn {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 14px 10px;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .1s, border-color .15s, background .15s;
+  }
+  .topic-btn .emoji { font-size: 1.6rem; display:block; margin-bottom: 4px; }
+  .topic-btn:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .topic-btn.selected { border-color: var(--accent2); background: rgba(52,211,153,0.15); }
+  .topic-btn .best { display:block; font-size: 0.72rem; color: var(--sub); font-weight: 400; margin-top:3px; }
+  .topic-btn.locked { opacity: 0.45; cursor: default; }
+  .topic-btn.locked:hover { transform: none; border-color: rgba(255,255,255,0.15); }
+
+  .tier-section { margin-bottom: 16px; }
+  .tier-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+  }
+  .tier-header .lock-note {
+    text-transform: none;
+    font-weight: 400;
+    color: var(--sub);
+    opacity: 0.75;
+    letter-spacing: normal;
+    font-size: 0.78rem;
+  }
+  .mixed-wrap { margin-bottom: 16px; }
+
+  .row { display:flex; gap: 10px; justify-content:center; margin-top: 14px; flex-wrap: wrap; }
+  .time-btn {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 8px 16px;
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .time-btn.selected { border-color: var(--accent); background: rgba(251,191,36,0.15); }
+
+  .big-btn {
+    display:block;
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--accent2), #22d3ee);
+    color: #0f172a;
+  }
+  .big-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* quiz screen */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .hud .timer { color: var(--accent); font-size: 1.3rem; }
+  .hud .streak { color: var(--accent2); }
+  .level-badge {
+    background: rgba(251,191,36,0.15);
+    border: 1px solid rgba(251,191,36,0.4);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.85rem;
+  }
+  .progress-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width .3s linear;
+  }
+  .question-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 10px 0 22px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.4;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .opt-btn {
+    background: rgba(255,255,255,0.07);
+    border: 2px solid rgba(255,255,255,0.18);
+    border-radius: 12px;
+    padding: 14px 8px;
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .opt-btn:hover { border-color: var(--accent); }
+  .opt-btn.correct { background: rgba(52,211,153,0.35); border-color: var(--accent2); }
+  .opt-btn.wrong { background: rgba(248,113,113,0.35); border-color: var(--wrong); }
+  .opt-btn:disabled { cursor: default; }
+
+  .feedback { text-align:center; margin-top: 10px; min-height: 20px; font-weight: 600; color: var(--sub); }
+
+  .end-score { text-align: center; font-size: 2.4rem; font-weight: 800; color: var(--accent); margin: 6px 0; }
+  .end-sub { text-align: center; color: var(--sub); margin-bottom: 6px; }
+  .end-msg { text-align: center; font-size: 1.05rem; margin: 14px 0; }
+  .best-note { text-align:center; color: var(--accent2); font-weight: 700; margin-bottom: 10px; }
+
+  .back-link {
+    text-align: center;
+    margin-top: 10px;
+    color: var(--sub);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.9rem;
+  }
+  .hidden { display: none; }
+
+  /* stats / rewards */
+  .stats-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .stats-bar .stat { display:flex; align-items:center; gap:4px; }
+  .stats-link {
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 14px;
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .earned-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 10px 0;
+  }
+  .earned-row span.pop { color: var(--accent); }
+  .badge-toast {
+    background: rgba(251,191,36,0.12);
+    border: 1px solid rgba(251,191,36,0.4);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin: 8px 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .progress-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .progress-tile {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+  .progress-tile .num { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+  .progress-tile .lbl { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
+  .level-rows { margin-top: 4px; }
+  .level-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.9rem;
+  }
+  .level-row .dots span { opacity: 0.25; }
+  .level-row .dots span.filled { opacity: 1; }
+  .badge-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .badge-tile {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  .badge-tile .bicon { font-size: 1.3rem; display:block; }
+  .badge-locked { opacity: 0.35; }
+
+  /* leaderboard */
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .lb-row.me { background: rgba(52,211,153,0.12); border-radius: 10px; }
+  .lb-rank { width: 26px; font-weight: 800; color: var(--sub); text-align:center; }
+  .lb-name { flex: 1; font-weight: 700; }
+  .lb-stats { font-size: 0.85rem; color: var(--sub); white-space: nowrap; }
+  .lb-note { text-align:center; color: var(--sub); font-size: 0.82rem; margin: 8px 0 4px; }
+
+  /* squad goal */
+  .squad-card {
+    background: rgba(34,211,238,0.08);
+    border: 1px solid rgba(34,211,238,0.3);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .squad-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; display:flex; justify-content:space-between; }
+  .squad-title .amt { color: #22d3ee; }
+  .squad-bar-track { height: 10px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+  .squad-bar-fill { height: 100%; background: linear-gradient(90deg, #22d3ee, var(--accent2)); transition: width .3s; }
+  .squad-sub { font-size: 0.75rem; color: var(--sub); margin-top: 4px; }
+  .crown { margin-right: 2px; }
+
+  /* ninja tools shop */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .tool-tile {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .tool-tile .ticon { font-size: 1.8rem; display:block; margin-bottom: 4px; }
+  .tool-tile .tname { font-weight: 700; font-size: 0.85rem; }
+  .tool-tile .tcost { font-size: 0.78rem; color: var(--sub); margin-top: 3px; }
+  .tool-tile.owned { border-color: var(--accent2); background: rgba(52,211,153,0.12); }
+  .tool-tile.locked { opacity: 0.6; }
+  .tool-tile.locked:hover { border-color: var(--accent); opacity: 0.85; }
+  .tool-tile.cant-afford { opacity: 0.4; cursor: default; }
+
+  /* score card */
+  .sc-callout {
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .sc-strength { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.35); }
+  .sc-focus { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35); }
+  .sc-callout-title { font-weight: 700; margin-bottom: 6px; font-size: 0.9rem; }
+  .sc-callout-item { font-size: 0.88rem; margin-bottom: 3px; }
+  .sc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sc-row .sc-label { flex: 0 0 46%; font-size: 0.85rem; }
+  .sc-row .sc-bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
+  .sc-row .sc-bar-fill { height: 100%; border-radius: 5px; }
+  .sc-row .sc-pct { width: 42px; text-align: right; font-size: 0.8rem; color: var(--sub); font-weight: 700; }
+
+  /* name screen */
+  .name-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    font-size: 1.1rem;
+    margin-top: 10px;
+  }
+  .name-input:focus { outline: none; border-color: var(--accent); }
+  .player-chip {
+    text-align: center;
+    color: var(--sub);
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+
+  /* quit button */
+  .quit-btn {
+    background: rgba(248,113,113,0.12);
+    border: 1px solid rgba(248,113,113,0.4);
+    color: var(--wrong);
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* confirm modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-box {
+    background: #241f4d;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+  }
+  .modal-box .msg { margin-bottom: 16px; font-weight: 600; }
+  .modal-row { display:flex; gap: 10px; }
+  .modal-row button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .modal-yes { background: linear-gradient(90deg, var(--accent2), #22d3ee); color: #0f172a; }
+  .modal-no { background: rgba(255,255,255,0.1); color: var(--text); }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>⚡ Number Ninja ⚡</h1>
+  <div class="subtitle" id="subtitle">Quick tricks. Fast fingers. Gets a bit harder each time you're on a roll, eases off if you're not.</div>
+
+  <!-- NAME SCREEN -->
+  <div id="name-screen" class="card hidden">
+    <div style="font-weight:700; font-size:1.1rem; text-align:center; margin-bottom:6px;">What's your name?</div>
+    <div style="text-align:center; color:var(--sub); font-size:0.9rem; margin-bottom:4px;">Saves on this device only — no account, no login.</div>
+    <input type="text" id="name-input" class="name-input" placeholder="Type your name..." maxlength="20">
+    <button class="big-btn" id="name-submit-btn">Let's go!</button>
+  </div>
+
+  <!-- START SCREEN -->
+  <div id="start-screen" class="card hidden">
+    <div class="player-chip" id="player-chip"></div>
+    <div class="stats-bar">
+      <div class="stat">🪙 <span id="coin-count">0</span></div>
+      <div class="stat">⭐ <span id="star-count">0</span></div>
+      <div class="stat">🔥 <span id="daily-streak">0</span>d</div>
+    </div>
+    <div class="stats-link" id="progress-link">🏆 My Progress</div>
+    <div class="stats-link" id="tools-link">🥷 Ninja Tools</div>
+    <div class="stats-link" id="scorecard-link">📊 Score Card</div>
+    <div class="lb-note">Saved on this device only — no login, no account.</div>
+
+    <div style="font-weight:700; margin-bottom:10px;">Pick a topic</div>
+    <div id="topic-sections"></div>
+
+    <div style="font-weight:700; margin-top:18px;">Round length</div>
+    <div class="row" id="time-row">
+      <div class="time-btn" data-t="30">30s</div>
+      <div class="time-btn selected" data-t="60">60s</div>
+      <div class="time-btn" data-t="90">90s</div>
+    </div>
+
+    <button class="big-btn" id="start-btn" disabled>Choose a topic to start</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quiz-screen" class="card hidden">
+    <div class="hud">
+      <div>Score: <span id="score">0</span></div>
+      <div id="level-badge" class="level-badge hidden">Lv <span id="level-num">1</span></div>
+      <div class="timer" id="timer">60</div>
+      <div class="streak" id="streak">🔥 0</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:100%"></div></div>
+    <div class="question-text" id="question-text">Loading...</div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="row" style="margin-top:16px;">
+      <div class="quit-btn" id="quit-btn">✕ Quit round</div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen" class="card hidden">
+    <div class="end-sub" id="end-topic">Divisibility Rules</div>
+    <div class="end-score" id="end-score">0</div>
+    <div class="end-sub" id="end-detail">12 correct out of 15</div>
+    <div class="earned-row" id="earned-row"></div>
+    <div id="badge-toasts"></div>
+    <div class="best-note hidden" id="best-note">🏆 New best score!</div>
+    <div class="end-msg" id="end-msg"></div>
+    <button class="big-btn" id="again-btn">Play again</button>
+    <div class="back-link" id="menu-link">Back to topic menu</div>
+  </div>
+
+  <!-- PROGRESS SCREEN -->
+  <div id="progress-screen" class="card hidden">
+    <div style="font-weight:800; font-size:1.2rem; text-align:center; margin-bottom:4px;">🏆 My Progress</div>
+    <div class="progress-grid">
+      <div class="progress-tile"><div class="num" id="p-coins">0</div><div class="lbl">🪙 Coins</div></div>
+      <div class="progress-tile"><div class="num" id="p-stars">0</div><div class="lbl">⭐ Stars</div></div>
+      <div class="progress-tile"><div class="num" id="p-streak">0</div><div class="lbl">🔥 Day streak</div></div>
+      <div class="progress-tile"><div class="num" id="p-correct">0</div><div class="lbl">✅ Total correct</div></div>
+    </div>
+    <div style="font-weight:700; margin-top:10px;">Levels by topic</div>
+    <div class="level-rows" id="level-rows"></div>
+    <div style="font-weight:700; margin-top:14px;">Badges <span id="badge-count" style="color:var(--sub); font-weight:400;"></span></div>
+    <div class="badge-grid" id="badge-grid"></div>
+    <div class="back-link" id="progress-back-link">Back to topic menu</div>
+    <div class="back-link" id="reset-link" style="color:var(--wrong); margin-top:16px;">Reset all progress</div>
+  </div>
+
+  <!-- NINJA TOOLS SHOP -->
+  <div id="tools-screen" class="card hidden">
+    <div style="font-weight:800; font-size:1.2rem; text-align:center; margin-bottom:4px;">🥷 Ninja Tools</div>
+    <div class="lb-note">Spend coins to unlock tools for your collection.</div>
+    <div class="stats-bar" style="justify-content:center; gap:20px;">
+      <div class="stat">🪙 <span id="tools-coin-count">0</span></div>
+      <div class="stat" id="tools-owned-count">0/0 collected</div>
+    </div>
+    <div class="tools-grid" id="tools-grid"></div>
+    <div class="back-link" id="tools-back-link">Back to topic menu</div>
+  </div>
+
+  <!-- SCORE CARD -->
+  <div id="scorecard-screen" class="card hidden">
+    <div style="font-weight:800; font-size:1.2rem; text-align:center; margin-bottom:4px;">📊 Score Card</div>
+    <div class="lb-note">Accuracy by topic, based on everything played so far.</div>
+    <div id="sc-callouts"></div>
+    <div style="font-weight:700; margin-top:10px;">Full breakdown</div>
+    <div id="sc-rows"></div>
+    <div class="back-link" id="scorecard-back-link">Back to topic menu</div>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="msg" id="modal-msg">Are you sure?</div>
+      <div class="modal-row">
+        <button class="modal-no" id="modal-no-btn">Cancel</button>
+        <button class="modal-yes" id="modal-yes-btn">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------------- Reference facts used to build questions ----------------
+const divisibilityRules = {
+  2: "Last digit is even (0,2,4,6,8)",
+  3: "Digit sum divides by 3",
+  4: "Last 2 digits divide by 4",
+  5: "Last digit is 0 or 5",
+  6: "Divides by both 2 and 3",
+  8: "Last 3 digits divide by 8",
+  9: "Digit sum divides by 9",
+  10: "Last digit is 0",
+  11: "Alternating digit sum divides by 11 (or is 0)"
+};
+
+const lengthUnits = ["mm","cm","m","km"];
+const lengthToMM = { mm:1, cm:10, m:1000, km:1000000 };
+const massUnits = ["mg","g","kg"];
+const massToMG = { mg:1, g:1000, kg:1000000 };
+
+const timeFacts = [
+  {q:"How many seconds in a minute?", a:60},
+  {q:"How many minutes in an hour?", a:60},
+  {q:"How many hours in a day?", a:24},
+  {q:"How many days in a week?", a:7},
+  {q:"How many days in a fortnight?", a:14},
+  {q:"How many weeks in a year?", a:52},
+  {q:"How many months in a year?", a:12},
+  {q:"How many days in a leap year?", a:366},
+  {q:"How many years in a decade?", a:10},
+  {q:"How many years in a century?", a:100},
+  {q:"How many years in a millennium?", a:1000},
+  {q:"How many seconds in an hour?", a:3600},
+];
+
+const romanMap = [[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];
+function toRoman(num){
+  let res = "";
+  for (const [val, sym] of romanMap){
+    while (num >= val){ res += sym; num -= val; }
+  }
+  return res;
+}
+function fromRoman(str){
+  const vals = {I:1,V:5,X:10,L:50,C:100,D:500,M:1000};
+  let total = 0;
+  for (let i=0;i<str.length;i++){
+    const cur = vals[str[i]];
+    const next = vals[str[i+1]];
+    if (next && cur < next) total -= cur; else total += cur;
+  }
+  return total;
+}
+
+const formulaQs = [
+  {q:"Area of a rectangle?", a:"length × width"},
+  {q:"Area of a triangle?", a:"½ × base × height"},
+  {q:"Area of a circle?", a:"π × r²"},
+  {q:"Circumference of a circle?", a:"π × d  (or 2πr)"},
+  {q:"Perimeter of a rectangle?", a:"2 × (length + width)"},
+  {q:"Volume of a cuboid?", a:"length × width × height"},
+  {q:"Volume of a cube?", a:"side³"},
+  {q:"Volume of a cylinder?", a:"π × r² × height"},
+  {q:"Area of a parallelogram?", a:"base × height"},
+];
+
+// ---------------- Helpers ----------------
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
+function pick(arr){ return arr[randInt(0, arr.length-1)]; }
+function fmt(n){
+  // trims trailing zeros nicely
+  return Number(n.toFixed(4)).toString();
+}
+function makeOptions(correct, generator){
+  // generator() returns a plausible wrong numeric answer
+  const opts = new Set([correct]);
+  let guard = 0;
+  while (opts.size < 4 && guard < 50){
+    opts.add(generator());
+    guard++;
+  }
+  return shuffle([...opts]);
+}
+
+// ---------------- Question generators ----------------
+// Each generator takes a level 1-5 (1 = easiest, 5 = hardest) and scales accordingly.
+function qDivisibility(level=1){
+  const pools = {
+    1: [2,5,10],
+    2: [2,3,5,10],
+    3: [2,3,4,5,9,10],
+    4: [2,3,4,5,6,9,10,11],
+    5: [3,4,6,7,8,9,11,12]
+  };
+  const divisors = pools[Math.min(5,Math.max(1,level))];
+  const d = pick(divisors);
+  const wantYes = Math.random() < 0.5;
+  const upper = 20 + level*25;
+  let n = d * randInt(4, upper);
+  if (!wantYes){ n += randInt(1, d-1); }
+  n = Math.abs(n);
+  const isDiv = n % d === 0;
+  return {
+    text: `Is ${n} divisible by ${d}?`,
+    options: ["Yes", "No"],
+    correct: isDiv ? "Yes" : "No"
+  };
+}
+
+function qLength(level=1){
+  // low level: adjacent units, whole numbers. high level: any pair, decimals allowed.
+  const adjacentPairs = [["mm","cm"],["cm","m"],["m","km"]];
+  let from, to;
+  if (level <= 2){
+    [from, to] = pick(adjacentPairs.concat(adjacentPairs.map(p=>[p[1],p[0]])));
+  } else {
+    from = pick(lengthUnits);
+    to = pick(lengthUnits);
+    while (to === from) to = pick(lengthUnits);
+  }
+  const allowDecimal = level >= 3;
+  const value = randInt(1, 10 + level*15) * (allowDecimal && Math.random() < 0.4 ? 0.5 : 1);
+  const mm = value * lengthToMM[from];
+  const answer = fmt(mm / lengthToMM[to]);
+  const opts = makeOptions(answer, () => {
+    const factor = pick([0.1, 10, 100, 2, 0.5]);
+    return fmt(Number(answer) * factor === Number(answer) ? Number(answer)+randInt(1,9) : Number(answer)*factor);
+  });
+  return {
+    text: `${fmt(value)} ${from} = ___ ${to}`,
+    options: opts.map(String),
+    correct: String(answer)
+  };
+}
+
+function qMass(level=1){
+  const adjacentPairs = [["mg","g"],["g","kg"]];
+  let from, to;
+  if (level <= 2){
+    [from, to] = pick(adjacentPairs.concat(adjacentPairs.map(p=>[p[1],p[0]])));
+  } else {
+    from = pick(massUnits);
+    to = pick(massUnits);
+    while (to === from) to = pick(massUnits);
+  }
+  const allowDecimal = level >= 3;
+  const value = randInt(1, 10 + level*15) * (allowDecimal && Math.random() < 0.4 ? 0.5 : 1);
+  const mg = value * massToMG[from];
+  const answer = fmt(mg / massToMG[to]);
+  const opts = makeOptions(answer, () => {
+    const factor = pick([0.1, 10, 100, 2, 0.5]);
+    return fmt(Number(answer) * factor === Number(answer) ? Number(answer)+randInt(1,9) : Number(answer)*factor);
+  });
+  return {
+    text: `${fmt(value)} ${from} = ___ ${to}`,
+    options: opts.map(String),
+    correct: String(answer)
+  };
+}
+
+function qAreaVolumeUnits(level=1){
+  // low level: the bare 1cm facts. higher level: applied conversions with bigger values.
+  if (level <= 2){
+    const type = pick(["len","area","vol"]);
+    if (type === "len") return { text: "1 cm = ___ mm", options: shuffle(["10","100","1000","1"]), correct: "10" };
+    if (type === "area") return { text: "1 cm² = ___ mm²", options: shuffle(["10","100","1000","20"]), correct: "100" };
+    return { text: "1 cm³ = ___ mm³", options: shuffle(["100","1000","10000","300"]), correct: "1000" };
+  }
+  const type = pick(["area","vol"]);
+  const val = randInt(2, 4 + level*2);
+  if (type === "area"){
+    const answer = val * 100;
+    const opts = makeOptions(answer, () => answer + pick([-100,-10,10,100,val]));
+    return { text: `${val} cm² = ___ mm²`, options: opts.map(String), correct: String(answer) };
+  }
+  const answer = val * 1000;
+  const opts = makeOptions(answer, () => answer + pick([-1000,-100,100,1000,val]));
+  return { text: `${val} cm³ = ___ mm³`, options: opts.map(String), correct: String(answer) };
+}
+
+function qTime(level=1){
+  // low level: bare facts only. higher level: applied, with decimals/bigger multiples.
+  if (level <= 2 || Math.random() < 0.4){
+    const fact = pick(timeFacts);
+    const opts = makeOptions(fact.a, () => fact.a + pick([-10,-7,-2,-1,1,2,7,10,fact.a]));
+    return { text: fact.q, options: opts.map(String), correct: String(fact.a) };
+  }
+  // applied conversion
+  const kind = pick(["hm","dh","ws","my"]);
+  const allowDecimal = level >= 4;
+  if (kind === "hm"){
+    const h = randInt(1, 3+level) + (allowDecimal ? pick([0,0.5]) : 0);
+    const answer = h*60;
+    const opts = makeOptions(answer, () => answer + pick([-30,-15,15,30,60]));
+    return { text: `How many minutes in ${fmt(h)} hours?`, options: opts.map(String), correct: String(answer) };
+  }
+  if (kind === "dh"){
+    const d = randInt(1, 5+level);
+    const answer = d*24;
+    const opts = makeOptions(answer, () => answer + pick([-24,-12,12,24,48]));
+    return { text: `How many hours in ${d} days?`, options: opts.map(String), correct: String(answer) };
+  }
+  if (kind === "ws"){
+    const w = randInt(1, 5+level);
+    const answer = w*7;
+    const opts = makeOptions(answer, () => answer + pick([-7,-2,2,7,14]));
+    return { text: `How many days in ${w} weeks?`, options: opts.map(String), correct: String(answer) };
+  }
+  const y = randInt(1, 5+level);
+  const answer = y*12;
+  const opts = makeOptions(answer, () => answer + pick([-12,-6,6,12,24]));
+  return { text: `How many months in ${y} years?`, options: opts.map(String), correct: String(answer) };
+}
+
+function qRoman(level=1){
+  const caps = {1:20, 2:100, 3:500, 4:1000, 5:3999};
+  const max = caps[Math.min(5,Math.max(1,level))];
+  const n = randInt(1, max);
+  if (Math.random() < 0.5){
+    const r = toRoman(n);
+    const opts = makeOptions(r, () => toRoman(Math.max(1, n + pick([-9,-5,-4,-1,1,4,5,9]))));
+    return { text: `Convert to Roman numerals: ${n}`, options: opts, correct: r };
+  } else {
+    const r = toRoman(n);
+    const opts = makeOptions(n, () => Math.max(1, n + pick([-9,-5,-4,-1,1,4,5,9])));
+    return { text: `Convert to a number: ${r}`, options: opts.map(String), correct: String(n) };
+  }
+}
+
+function qFormula(){
+  const f = pick(formulaQs);
+  const others = shuffle(formulaQs.filter(x => x.a !== f.a)).slice(0,3).map(x=>x.a);
+  return { text: f.q, options: shuffle([f.a, ...others]), correct: f.a };
+}
+
+// ---- Place Value ----
+function qPlaceValue(level=1){
+  const d = () => randInt(1,9);
+  const d1=d(), d2=d(), d3=d(), d4=d(), d5=randInt(0,9), d6=randInt(0,9);
+  const numberStr = `${d1}${d2}${d3}${d4}.${d5}${d6}`;
+  const easyPlaces = [
+    {name:"tens", digit:d3, mult:10},
+    {name:"units", digit:d4, mult:1},
+    {name:"hundreds", digit:d2, mult:100},
+  ];
+  const hardPlaces = [
+    {name:"thousands", digit:d1, mult:1000},
+    {name:"hundreds", digit:d2, mult:100},
+    {name:"tens", digit:d3, mult:10},
+    {name:"units", digit:d4, mult:1},
+    {name:"tenths", digit:d5, mult:0.1},
+    {name:"hundredths", digit:d6, mult:0.01},
+  ];
+  const places = level <= 2 ? easyPlaces : hardPlaces;
+  const p = pick(places);
+  const answer = fmt(p.digit * p.mult);
+  const opts = makeOptions(answer, () => {
+    const other = pick(places);
+    return fmt(other.digit * other.mult);
+  });
+  return {
+    text: `In ${numberStr}, what is the value of the digit in the ${p.name} place?`,
+    options: opts.map(String),
+    correct: String(answer)
+  };
+}
+
+// ---- Special Numbers ----
+function isPrime(n){
+  if (n < 2) return false;
+  for (let i=2; i*i<=n; i++){ if (n % i === 0) return false; }
+  return true;
+}
+const squareSet = Array.from({length:15}, (_,i)=> (i+1)*(i+1));
+const cubeSet = Array.from({length:10}, (_,i)=> (i+1)*(i+1)*(i+1));
+const triSet = Array.from({length:15}, (_,i)=> (i+1)*(i+2)/2);
+const fibSet = (()=>{ const f=[1,1]; while(f.length<15) f.push(f[f.length-1]+f[f.length-2]); return [...new Set(f)]; })();
+const primeSet = Array.from({length:100}, (_,i)=>i+1).filter(isPrime);
+
+function qSpecialNumbers(level=1){
+  const easyKinds = [
+    {name:"square", set:squareSet.filter(n=>n<=100), max:100},
+    {name:"prime", set:primeSet.filter(n=>n<=30), max:30},
+  ];
+  const hardKinds = [
+    {name:"square", set:squareSet, max:230},
+    {name:"cube", set:cubeSet, max:1000},
+    {name:"triangular", set:triSet, max:120},
+    {name:"prime", set:primeSet, max:100},
+    {name:"Fibonacci", set:fibSet, max:610},
+  ];
+  const k = pick(level <= 2 ? easyKinds : hardKinds);
+  const wantYes = Math.random() < 0.5;
+  let n;
+  if (wantYes){
+    n = pick(k.set);
+  } else {
+    do { n = randInt(2, k.max); } while (k.set.includes(n));
+  }
+  const isMember = k.set.includes(n);
+  return {
+    text: `Is ${n} a ${k.name} number?`,
+    options: ["Yes","No"],
+    correct: isMember ? "Yes" : "No"
+  };
+}
+
+// ---- Fractions / Decimals / Percentages ----
+const fdpTable = [
+  {f:"1/2", d:"0.5", p:"50%"},
+  {f:"1/3", d:"0.333", p:"33.3%"},
+  {f:"2/3", d:"0.667", p:"66.7%"},
+  {f:"1/4", d:"0.25", p:"25%"},
+  {f:"3/4", d:"0.75", p:"75%"},
+  {f:"1/5", d:"0.2", p:"20%"},
+  {f:"2/5", d:"0.4", p:"40%"},
+  {f:"3/5", d:"0.6", p:"60%"},
+  {f:"4/5", d:"0.8", p:"80%"},
+  {f:"1/6", d:"0.167", p:"16.7%"},
+  {f:"5/6", d:"0.833", p:"83.3%"},
+  {f:"1/7", d:"0.143", p:"14.3%"},
+  {f:"2/7", d:"0.286", p:"28.6%"},
+  {f:"1/8", d:"0.125", p:"12.5%"},
+  {f:"3/8", d:"0.375", p:"37.5%"},
+  {f:"5/8", d:"0.625", p:"62.5%"},
+  {f:"7/8", d:"0.875", p:"87.5%"},
+  {f:"1/9", d:"0.111", p:"11.1%"},
+  {f:"1/10", d:"0.1", p:"10%"},
+  {f:"3/10", d:"0.3", p:"30%"},
+  {f:"7/10", d:"0.7", p:"70%"},
+  {f:"9/10", d:"0.9", p:"90%"},
+  {f:"1/20", d:"0.05", p:"5%"},
+  {f:"3/20", d:"0.15", p:"15%"},
+  {f:"1/100", d:"0.01", p:"1%"},
+];
+const fdpEasyFracs = new Set(["1/2","1/4","3/4","1/5","2/5","3/5","4/5","1/10","3/10","7/10","9/10"]);
+function qFDP(level=1){
+  const pool = level <= 2 ? fdpTable.filter(e => fdpEasyFracs.has(e.f)) : fdpTable;
+  const entry = pick(pool);
+  const keys = ["f","d","p"];
+  const labels = {f:"a fraction", d:"a decimal (to 3 dp where needed)", p:"a percentage"};
+  let from = pick(keys);
+  let to = pick(keys);
+  while (to === from) to = pick(keys);
+  const correct = entry[to];
+  const opts = makeOptions(correct, () => {
+    const other = pick(fdpTable);
+    return other[to];
+  });
+  return {
+    text: `Write ${entry[from]} as ${labels[to]}`,
+    options: opts,
+    correct: correct
+  };
+}
+
+// ---- 12-hour / 24-hour clock ----
+function qClock(level=1){
+  const h24 = randInt(0,23);
+  const min = level <= 2 ? pick([0,30]) : pick([0,5,10,15,20,25,30,35,40,45,50,55]);
+  const mm = String(min).padStart(2,"0");
+  const h24str = `${String(h24).padStart(2,"0")}:${mm}`;
+  let h12 = h24 % 12; if (h12 === 0) h12 = 12;
+  const ampm = h24 < 12 ? "am" : "pm";
+  const h12str = `${h12}:${mm}${ampm}`;
+  const toTwentyFour = Math.random() < 0.5;
+  if (toTwentyFour){
+    const opts = makeOptions(h24str, () => {
+      const hh = (h24 + pick([-2,-1,1,2,12])+24) % 24;
+      return `${String(hh).padStart(2,"0")}:${mm}`;
+    });
+    return { text: `Write ${h12str} on the 24-hour clock`, options: opts, correct: h24str };
+  } else {
+    const opts = makeOptions(h12str, () => {
+      let hh = h12 + pick([-1,1,2,-2]);
+      hh = ((hh - 1 + 12) % 12) + 1;
+      const other_ampm = pick([ampm, ampm === "am" ? "pm" : "am"]);
+      return `${hh}:${mm}${other_ampm}`;
+    });
+    return { text: `Write ${h24str} (24-hour) on a 12-hour clock`, options: opts, correct: h12str };
+  }
+}
+
+// ---- Mathematical Symbols ----
+const symbolTable = [
+  {s:"<", m:"less than"},
+  {s:">", m:"greater than"},
+  {s:"≤", m:"less than or equal to"},
+  {s:"≥", m:"greater than or equal to"},
+  {s:"≠", m:"not equal to"},
+  {s:"≈", m:"approximately equal to"},
+  {s:"±", m:"plus or minus"},
+  {s:"√", m:"square root"},
+  {s:"π", m:"pi"},
+  {s:"°", m:"degrees"},
+  {s:"%", m:"percent"},
+  {s:"∞", m:"infinity"},
+];
+function qSymbols(){
+  const entry = pick(symbolTable);
+  const askMeaning = Math.random() < 0.5;
+  if (askMeaning){
+    const opts = makeOptions(entry.m, () => pick(symbolTable).m);
+    return { text: `What does "${entry.s}" mean?`, options: opts, correct: entry.m };
+  } else {
+    const opts = makeOptions(entry.s, () => pick(symbolTable).s);
+    return { text: `Which symbol means "${entry.m}"?`, options: opts, correct: entry.s };
+  }
+}
+
+// ---- HCF / LCM ----
+function gcd(a,b){ while(b){ [a,b] = [b, a % b]; } return a; }
+function lcm(a,b){ return (a*b)/gcd(a,b); }
+function qHCFLCM(level=1){
+  const ranges = { 1:[2,12], 2:[2,20], 3:[4,36], 4:[6,60], 5:[8,100] };
+  const [lo,hi] = ranges[Math.min(5,Math.max(1,level))];
+  let a = randInt(lo,hi), b = randInt(lo,hi);
+  while (a === b) b = randInt(lo,hi);
+  const askHCF = Math.random() < 0.5;
+  if (askHCF){
+    const answer = gcd(a,b);
+    const opts = makeOptions(answer, () => Math.max(1, answer + pick([-3,-2,-1,1,2,3])));
+    return { text: `What is the HCF of ${a} and ${b}?`, options: opts.map(String), correct: String(answer) };
+  }
+  const answer = lcm(a,b);
+  const opts = makeOptions(answer, () => Math.max(a,b, answer + pick([-a,-b,a,b,-1,1]) ));
+  return { text: `What is the LCM of ${a} and ${b}?`, options: opts.map(String), correct: String(answer) };
+}
+
+const topics = {
+  divisibility: { label: "Divisibility Rules", emoji: "🔢", gen: qDivisibility },
+  length: { label: "Length (mm/cm/m/km)", emoji: "📏", gen: qLength },
+  mass: { label: "Mass (mg/g/kg)", emoji: "⚖️", gen: qMass },
+  areavol_units: { label: "cm / cm² / cm³", emoji: "🧊", gen: qAreaVolumeUnits },
+  time: { label: "Time Conversions", emoji: "⏰", gen: qTime },
+  clock: { label: "12hr / 24hr Clock", emoji: "🕐", gen: qClock },
+  roman: { label: "Roman Numerals", emoji: "Ⅻ", gen: qRoman },
+  formula: { label: "Area & Volume Formulas", emoji: "📐", gen: qFormula },
+  placevalue: { label: "Place Value", emoji: "🔟", gen: qPlaceValue },
+  special: { label: "Special Numbers", emoji: "⭐", gen: qSpecialNumbers },
+  fdp: { label: "Fractions/Decimals/%", emoji: "🍰", gen: qFDP },
+  symbols: { label: "Maths Symbols", emoji: "➗", gen: qSymbols },
+  hcflcm: { label: "HCF & LCM", emoji: "🧩", gen: qHCFLCM },
+  mixed: { label: "Mixed Challenge", emoji: "🎲", gen: null }
+};
+const adaptiveTopics = new Set(["divisibility","length","mass","areavol_units","time","clock","roman","placevalue","special","fdp","hcflcm","mixed"]);
+
+// ---- Tiers: groups unlock as a topic in the previous tier reaches Lv 3 ----
+const TIERS = [
+  { name: "Foundations", topics: ["fdp","divisibility"] },
+  { name: "Conversions", topics: ["length","mass","areavol_units","time"] },
+  { name: "Number Sense", topics: ["placevalue","special","hcflcm"] },
+  { name: "Extras", topics: ["roman","clock"] },
+];
+const BONUS_TOPICS = ["formula","symbols"]; // pure recall, no level gating — always available
+const UNLOCK_LEVEL = 3;
+
+function isTierUnlocked(tierIndex){
+  if (tierIndex === 0) return true;
+  const prevTopics = TIERS[tierIndex - 1].topics;
+  return prevTopics.some(k => (topicLevels[k] || 1) >= UNLOCK_LEVEL);
+}
+function unlockedTierTopics(){
+  let out = [];
+  TIERS.forEach((tier, i) => { if (isTierUnlocked(i)) out = out.concat(tier.topics); });
+  return out;
+}
+function currentMixKeys(){
+  return unlockedTierTopics().concat(BONUS_TOPICS);
+}
+
+// ---------------- Rewards: badges ----------------
+const BADGES = [
+  { id: "first_round", icon: "🎯", name: "First Round", desc: "Complete your first round", check: (p) => p.roundsPlayed >= 1 },
+  { id: "hot_streak", icon: "🔥", name: "Hot Streak", desc: "Get 5 in a row in one round", check: (p, ctx) => ctx.bestStreakThisRound >= 5 },
+  { id: "on_fire", icon: "🔥", name: "On Fire", desc: "Get 10 in a row in one round", check: (p, ctx) => ctx.bestStreakThisRound >= 10 },
+  { id: "level_3", icon: "⬆️", name: "Leveling Up", desc: "Reach Level 3 in any topic", check: () => Object.values(topicLevels || {}).some(l => l >= 3) },
+  { id: "level_5", icon: "🚀", name: "Maxed Out", desc: "Reach Level 5 in any topic", check: () => Object.values(topicLevels || {}).some(l => l >= 5) },
+  { id: "tier2", icon: "🗝️", name: "Key Finder", desc: "Unlock the Conversions tier", check: () => isTierUnlocked(1) },
+  { id: "tier3", icon: "🗝️", name: "Deeper In", desc: "Unlock the Number Sense tier", check: () => isTierUnlocked(2) },
+  { id: "tier4", icon: "🏅", name: "Full House", desc: "Unlock the Extras tier", check: () => isTierUnlocked(3) },
+  { id: "fifty_correct", icon: "✅", name: "Half Century", desc: "50 correct answers all-time", check: (p) => p.totalCorrect >= 50 },
+  { id: "hundred_correct", icon: "💯", name: "Century", desc: "100 correct answers all-time", check: (p) => p.totalCorrect >= 100 },
+  { id: "three_day", icon: "📅", name: "Getting Going", desc: "Play 3 days in a row", check: (p) => p.dailyStreak >= 3 },
+  { id: "week_streak", icon: "🌟", name: "Week Streak", desc: "Play 7 days in a row", check: (p) => p.dailyStreak >= 7 },
+];
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ---------------- Ninja Tools shop (spend coins, build a collection) ----------------
+const NINJA_TOOLS = [
+  { id: "shuriken", icon: "⭐", name: "Shuriken", cost: 10 },
+  { id: "kunai", icon: "🗡️", name: "Kunai Blade", cost: 15 },
+  { id: "smokebomb", icon: "💨", name: "Smoke Bomb", cost: 20 },
+  { id: "nunchaku", icon: "🥢", name: "Nunchaku", cost: 25 },
+  { id: "rope", icon: "🪢", name: "Grappling Rope", cost: 30 },
+  { id: "scroll", icon: "📜", name: "Ninja Scroll", cost: 40 },
+  { id: "mask", icon: "🎭", name: "Ninja Mask", cost: 50 },
+  { id: "staff", icon: "🥍", name: "Bo Staff", cost: 60 },
+  { id: "lantern", icon: "🏮", name: "Stealth Lantern", cost: 75 },
+  { id: "belt", icon: "🥋", name: "Black Belt", cost: 90 },
+  { id: "sai", icon: "🔱", name: "Twin Sai", cost: 110 },
+  { id: "star", icon: "🌟", name: "Golden Shuriken", cost: 140 },
+  { id: "dragon", icon: "🐉", name: "Dragon Emblem", cost: 175 },
+  { id: "katana", icon: "⚔️", name: "Master Katana", cost: 220 },
+  { id: "crown", icon: "👑", name: "Ninja Crown", cost: 280 },
+];
+function renderNinjaTools(){
+  document.getElementById('tools-coin-count').textContent = progress.coins;
+  const owned = progress.ninjaTools || [];
+  document.getElementById('tools-owned-count').textContent = `${owned.length}/${NINJA_TOOLS.length} collected`;
+  const grid = document.getElementById('tools-grid');
+  grid.innerHTML = "";
+  NINJA_TOOLS.forEach(tool => {
+    const isOwned = owned.includes(tool.id);
+    const canAfford = progress.coins >= tool.cost;
+    const tile = document.createElement('div');
+    tile.className = 'tool-tile' + (isOwned ? ' owned' : ' locked') + (!isOwned && !canAfford ? ' cant-afford' : '');
+    tile.innerHTML = isOwned
+      ? `<span class="ticon">${tool.icon}</span><div class="tname">${tool.name}</div><div class="tcost">✅ Collected</div>`
+      : `<span class="ticon">${tool.icon}</span><div class="tname">${tool.name}</div><div class="tcost">🪙 ${tool.cost}</div>`;
+    if (!isOwned){
+      tile.onclick = () => buyNinjaTool(tool);
+    }
+    grid.appendChild(tile);
+  });
+}
+async function buyNinjaTool(tool){
+  if (progress.coins < tool.cost) return;
+  const confirmed = await askConfirm(`Unlock ${tool.icon} ${tool.name} for ${tool.cost} coins?`);
+  if (!confirmed) return;
+  progress.coins -= tool.cost;
+  progress.ninjaTools = progress.ninjaTools || [];
+  progress.ninjaTools.push(tool.id);
+  await saveProgress();
+  updateStatsBar();
+  renderNinjaTools();
+}
+
+// ---------------- Score Card (per-topic accuracy: strengths & focus areas) ----------------
+const SC_MIN_SAMPLE = 5; // need at least this many answers on a topic before judging it
+function scoreCardData(){
+  const stats = progress.topicStats || {};
+  const rows = Object.keys(stats)
+    .filter(key => topics[key] && key !== 'mixed')
+    .map(key => {
+      const s = stats[key];
+      return {
+        key,
+        label: topics[key].label,
+        emoji: topics[key].emoji,
+        correct: s.correct,
+        answered: s.answered,
+        accuracy: s.answered ? Math.round(100 * s.correct / s.answered) : 0
+      };
+    });
+  rows.sort((a,b) => b.accuracy - a.accuracy);
+  return rows;
+}
+function renderScoreCard(){
+  const rows = scoreCardData();
+  const callouts = document.getElementById('sc-callouts');
+  const scRows = document.getElementById('sc-rows');
+  callouts.innerHTML = "";
+  scRows.innerHTML = "";
+
+  if (!rows.length){
+    callouts.innerHTML = `<div class="lb-note">Play a few rounds across different topics and this will fill in.</div>`;
+    return;
+  }
+
+  const confident = rows.filter(r => r.answered >= SC_MIN_SAMPLE);
+  const strengths = confident.filter(r => r.accuracy >= 75).slice(0, 3);
+  const focusAreas = confident.filter(r => r.accuracy < 65).slice(-3).reverse();
+
+  if (strengths.length){
+    const box = document.createElement('div');
+    box.className = 'sc-callout sc-strength';
+    box.innerHTML = `<div class="sc-callout-title">💪 Strengths</div>` +
+      strengths.map(r => `<div class="sc-callout-item">${r.emoji} ${r.label} — ${r.accuracy}%</div>`).join('');
+    callouts.appendChild(box);
+  }
+  if (focusAreas.length){
+    const box = document.createElement('div');
+    box.className = 'sc-callout sc-focus';
+    box.innerHTML = `<div class="sc-callout-title">🎯 Worth practicing more</div>` +
+      focusAreas.map(r => `<div class="sc-callout-item">${r.emoji} ${r.label} — ${r.accuracy}%</div>`).join('');
+    callouts.appendChild(box);
+  }
+  if (!strengths.length && !focusAreas.length){
+    callouts.innerHTML = `<div class="lb-note">Play a bit more on each topic (5+ questions) to see strengths and focus areas here.</div>`;
+  }
+
+  rows.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'sc-row';
+    const barColor = r.accuracy >= 75 ? 'var(--accent2)' : (r.accuracy >= 50 ? 'var(--accent)' : 'var(--wrong)');
+    const enough = r.answered >= SC_MIN_SAMPLE;
+    row.innerHTML = `<div class="sc-label">${r.emoji} ${r.label}</div>` +
+      `<div class="sc-bar-track"><div class="sc-bar-fill" style="width:${r.accuracy}%; background:${barColor};"></div></div>` +
+      `<div class="sc-pct">${enough ? r.accuracy + '%' : r.answered + '/' + SC_MIN_SAMPLE}</div>`;
+    if (!enough) row.title = "A few more questions here will make this accurate";
+    scRows.appendChild(row);
+  });
+}
+
+// ---------------- State ----------------
+let selectedTopic = null;
+let roundSeconds = 60;
+let bestScores = {};
+let topicLevels = {};
+let progress = { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, badges:[], bestStreaks:{}, playerName:null, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{} };
+const MAX_LEVEL = 5;
+const LEVEL_UP_STREAK = 3; // consecutive correct answers needed to level up
+
+let state = {
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  answered: 0,
+  timeLeft: 0,
+  timerId: null,
+  current: null,
+  level: 1,
+  correctStreak: 0,
+  peakLevel: 1,
+  levelUps: 0
+};
+
+// ---------------- Storage (browser localStorage — no account, no login) ----------------
+function lsGet(key){
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+  catch(e){ return null; }
+}
+function lsSet(key, value){
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch(e){ return false; }
+}
+async function loadBests(){
+  bestScores = lsGet('number-ninja-best-scores') || {};
+  topicLevels = lsGet('number-ninja-topic-levels') || {};
+  const p = lsGet('number-ninja-progress');
+  if (p) progress = Object.assign(progress, p);
+}
+async function saveBest(topicKey, score){
+  const key = topicKey + "_" + roundSeconds;
+  const prevBest = bestScores[key] || 0;
+  let isNew = false;
+  if (score > prevBest){
+    bestScores[key] = score;
+    isNew = true;
+    lsSet('number-ninja-best-scores', bestScores);
+  }
+  return isNew;
+}
+async function saveLevel(topicKey, level){
+  topicLevels[topicKey] = level;
+  lsSet('number-ninja-topic-levels', topicLevels);
+}
+async function saveProgress(){
+  lsSet('number-ninja-progress', progress);
+}
+function updateDailyStreak(){
+  const today = todayStr();
+  if (progress.lastPlayedDate === today) return; // already counted today
+  if (progress.lastPlayedDate){
+    const prev = new Date(progress.lastPlayedDate);
+    const cur = new Date(today);
+    const diffDays = Math.round((cur - prev) / 86400000);
+    progress.dailyStreak = diffDays === 1 ? (progress.dailyStreak || 0) + 1 : 1;
+  } else {
+    progress.dailyStreak = 1;
+  }
+  progress.lastPlayedDate = today;
+}
+function updateStatsBar(){
+  document.getElementById('coin-count').textContent = progress.coins;
+  document.getElementById('star-count').textContent = progress.stars;
+  document.getElementById('daily-streak').textContent = progress.dailyStreak || 0;
+}
+function updateGreeting(){
+  const name = progress.playerName;
+  document.getElementById('subtitle').textContent = name
+    ? `Hey ${name}! Gets a bit harder each time you're on a roll, eases off if you're not.`
+    : "Quick tricks. Fast fingers. Gets a bit harder each time you're on a roll, eases off if you're not.";
+  document.getElementById('player-chip').textContent = name ? `👤 ${name} · tap to change name` : '';
+}
+function checkNewBadges(ctx){
+  const earned = [];
+  BADGES.forEach(b => {
+    if (!progress.badges.includes(b.id) && b.check(progress, ctx)){
+      progress.badges.push(b.id);
+      progress.stars += 5;
+      earned.push(b);
+    }
+  });
+  return earned;
+}
+
+// ---------------- Render: start screen ----------------
+function makeTopicBtn(key, locked, lockNote){
+  const t = topics[key];
+  const btn = document.createElement('div');
+  btn.className = 'topic-btn' + (selectedTopic === key ? ' selected' : '') + (locked ? ' locked' : '');
+  const bestKey = key + "_" + roundSeconds;
+  const best = bestScores[bestKey];
+  const lvl = topicLevels[key];
+  const isAdaptive = adaptiveTopics.has(key);
+  let sub = "";
+  if (locked){
+    sub = `<span class="best">🔒 ${lockNote}</span>`;
+  } else if (best){
+    sub = `<span class="best">Best: ${best}${isAdaptive && lvl ? ` · Lv ${lvl}` : ''}</span>`;
+  } else if (isAdaptive && lvl){
+    sub = `<span class="best">Lv ${lvl}</span>`;
+  }
+  btn.innerHTML = `<span class="emoji">${t.emoji}</span>${t.label}` + sub;
+  if (!locked){
+    btn.onclick = () => { selectedTopic = key; renderTopicGrid(); updateStartBtn(); };
+  }
+  return btn;
+}
+
+function renderTopicGrid(){
+  const container = document.getElementById('topic-sections');
+  container.innerHTML = "";
+
+  // Mixed Challenge — always available, pulls from whatever's unlocked
+  const mixedWrap = document.createElement('div');
+  mixedWrap.className = 'mixed-wrap';
+  const mixedGrid = document.createElement('div');
+  mixedGrid.className = 'topic-grid';
+  mixedGrid.appendChild(makeTopicBtn('mixed', false, ''));
+  mixedWrap.appendChild(mixedGrid);
+  container.appendChild(mixedWrap);
+
+  // Only ever show tiers that are unlocked — locked ones stay hidden entirely,
+  // so new topics arrive as a surprise rather than a visible checklist.
+  TIERS.forEach((tier, i) => {
+    if (!isTierUnlocked(i)) return;
+    const section = document.createElement('div');
+    section.className = 'tier-section';
+    if (i > 0){
+      const header = document.createElement('div');
+      header.className = 'tier-header';
+      header.textContent = tier.name;
+      section.appendChild(header);
+    }
+    const grid = document.createElement('div');
+    grid.className = 'topic-grid';
+    tier.topics.forEach(key => grid.appendChild(makeTopicBtn(key, false, '')));
+    section.appendChild(grid);
+    container.appendChild(section);
+  });
+
+  // Bonus (pure recall, always unlocked)
+  const bonusSection = document.createElement('div');
+  bonusSection.className = 'tier-section';
+  const bonusHeader = document.createElement('div');
+  bonusHeader.className = 'tier-header';
+  bonusHeader.textContent = 'Bonus';
+  bonusSection.appendChild(bonusHeader);
+  const bonusGrid = document.createElement('div');
+  bonusGrid.className = 'topic-grid';
+  BONUS_TOPICS.forEach(key => bonusGrid.appendChild(makeTopicBtn(key, false, '')));
+  bonusSection.appendChild(bonusGrid);
+  container.appendChild(bonusSection);
+
+  // if the currently selected topic just got locked away somehow, clear it
+  if (selectedTopic){
+    const allUnlockedKeys = new Set(['mixed', ...unlockedTierTopics(), ...BONUS_TOPICS]);
+    if (!allUnlockedKeys.has(selectedTopic)) selectedTopic = null;
+  }
+}
+function updateStartBtn(){
+  const btn = document.getElementById('start-btn');
+  if (selectedTopic){
+    btn.disabled = false;
+    btn.textContent = `Start: ${topics[selectedTopic].label}`;
+  } else {
+    btn.disabled = true;
+    btn.textContent = "Choose a topic to start";
+  }
+}
+document.querySelectorAll('.time-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    roundSeconds = Number(b.dataset.t);
+    renderTopicGrid();
+  };
+});
+
+// ---------------- Confirm modal ----------------
+function askConfirm(message){
+  return new Promise(resolve => {
+    document.getElementById('modal-msg').textContent = message;
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.remove('hidden');
+    const yesBtn = document.getElementById('modal-yes-btn');
+    const noBtn = document.getElementById('modal-no-btn');
+    function cleanup(result){
+      overlay.classList.add('hidden');
+      yesBtn.onclick = null;
+      noBtn.onclick = null;
+      resolve(result);
+    }
+    yesBtn.onclick = () => cleanup(true);
+    noBtn.onclick = () => cleanup(false);
+  });
+}
+
+// ---------------- Quiz logic ----------------
+function currentIsAdaptive(){ return adaptiveTopics.has(selectedTopic); }
+
+function nextQuestion(){
+  const topicKey = selectedTopic === 'mixed' ? pick(currentMixKeys()) : selectedTopic;
+  const genFn = topics[topicKey].gen;
+  state.current = genFn(state.level);
+  state.current.topicKey = topicKey;
+  document.getElementById('question-text').textContent = state.current.text;
+  const optsDiv = document.getElementById('options');
+  optsDiv.innerHTML = "";
+  document.getElementById('feedback').textContent = "";
+  state.current.options.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.textContent = opt;
+    b.onclick = () => handleAnswer(opt, b);
+    optsDiv.appendChild(b);
+  });
+}
+
+function recordTopicStat(topicKey, correct){
+  progress.topicStats = progress.topicStats || {};
+  const s = progress.topicStats[topicKey] || { correct: 0, answered: 0 };
+  s.answered++;
+  if (correct) s.correct++;
+  progress.topicStats[topicKey] = s;
+}
+
+function handleAnswer(opt, btnEl){
+  if (!state.timerId) return; // round already ended
+  const correct = String(opt) === String(state.current.correct);
+  document.querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === String(state.current.correct)) b.classList.add('correct');
+    else if (b === btnEl && !correct) b.classList.add('wrong');
+  });
+  state.answered++;
+  recordTopicStat(state.current.topicKey, correct);
+  let levelMsg = "";
+  const adaptive = currentIsAdaptive();
+  if (correct){
+    state.score++;
+    state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    if (adaptive){
+      state.correctStreak++;
+      if (state.correctStreak >= LEVEL_UP_STREAK && state.level < MAX_LEVEL){
+        state.level++;
+        state.correctStreak = 0;
+        state.levelUps++;
+        if (state.level > state.peakLevel) state.peakLevel = state.level;
+        levelMsg = " ⬆️ Level up!";
+      }
+    }
+    document.getElementById('feedback').textContent = (state.streak >= 3 ? `🔥 Nice! ${state.streak} in a row!` : "✅ Correct!") + levelMsg;
+  } else {
+    state.streak = 0;
+    if (adaptive){
+      state.correctStreak = 0;
+      if (state.level > 1){
+        state.level--;
+        levelMsg = " — easing off a notch";
+      }
+    }
+    document.getElementById('feedback').textContent = `Not quite — it was ${state.current.correct}${levelMsg}`;
+  }
+  document.getElementById('score').textContent = state.score;
+  document.getElementById('streak').textContent = "🔥 " + state.streak;
+  if (adaptive) document.getElementById('level-num').textContent = state.level;
+  setTimeout(() => { if (state.timerId) nextQuestion(); }, 750);
+}
+
+function startQuiz(){
+  const startLevel = currentIsAdaptive() ? (topicLevels[selectedTopic] || 1) : 1;
+  state = {
+    score:0, streak:0, bestStreak:0, answered:0, timeLeft: roundSeconds, timerId: null, current: null,
+    level: startLevel, correctStreak: 0, peakLevel: startLevel, levelUps: 0
+  };
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('end-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  document.getElementById('score').textContent = "0";
+  document.getElementById('streak').textContent = "🔥 0";
+  document.getElementById('timer').textContent = state.timeLeft;
+  document.getElementById('progress-fill').style.width = "100%";
+  const badge = document.getElementById('level-badge');
+  if (currentIsAdaptive()){
+    badge.classList.remove('hidden');
+    document.getElementById('level-num').textContent = state.level;
+  } else {
+    badge.classList.add('hidden');
+  }
+  nextQuestion();
+  state.timerId = setInterval(() => {
+    state.timeLeft--;
+    document.getElementById('timer').textContent = state.timeLeft;
+    document.getElementById('progress-fill').style.width = (100 * state.timeLeft / roundSeconds) + "%";
+    if (state.timeLeft <= 0){
+      clearInterval(state.timerId);
+      state.timerId = null;
+      endQuiz();
+    }
+  }, 1000);
+}
+
+async function quitRound(){
+  if (!state.timerId) return;
+  const confirmed = await askConfirm("End this round early? You'll keep the coins and stars you've already earned.");
+  if (!confirmed) return;
+  clearInterval(state.timerId);
+  state.timerId = null;
+  endQuiz(true);
+}
+
+async function endQuiz(quit){
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('end-screen').classList.remove('hidden');
+  document.getElementById('end-topic').textContent = topics[selectedTopic].label + (quit ? ` · ended early` : ` · ${roundSeconds}s round`);
+  document.getElementById('end-score').textContent = state.score;
+  const adaptive = currentIsAdaptive();
+  document.getElementById('end-detail').textContent = `${state.score} correct out of ${state.answered} answered · best streak 🔥 ${state.bestStreak}` + (adaptive ? ` · reached Lv ${state.peakLevel}` : '');
+
+  const unlockedBefore = TIERS.map((t,i) => isTierUnlocked(i));
+  const isNewBest = await saveBest(selectedTopic, state.score);
+  if (adaptive) await saveLevel(selectedTopic, state.level);
+  const unlockedAfter = TIERS.map((t,i) => isTierUnlocked(i));
+  const newlyUnlockedTiers = TIERS.filter((t,i) => !unlockedBefore[i] && unlockedAfter[i]).map(t => t.name);
+
+  // ---- rewards: coins for correct answers, stars for milestones this round ----
+  const coinsEarned = state.score;
+  let starsEarned = state.levelUps + (newlyUnlockedTiers.length * 3) + (isNewBest ? 3 : 0);
+  progress.coins += coinsEarned;
+  progress.stars += starsEarned;
+  progress.totalCorrect += state.score;
+  progress.totalAnswered += state.answered;
+  progress.roundsPlayed = (progress.roundsPlayed || 0) + 1;
+  const prevTopicStreak = progress.bestStreaks[selectedTopic] || 0;
+  if (state.bestStreak > prevTopicStreak) progress.bestStreaks[selectedTopic] = state.bestStreak;
+
+  const newBadges = checkNewBadges({ bestStreakThisRound: state.bestStreak });
+  starsEarned += newBadges.length * 5; // reflect badge stars already added inside checkNewBadges to progress.stars
+
+  await saveProgress();
+  updateStatsBar();
+
+  const earnedRow = document.getElementById('earned-row');
+  earnedRow.innerHTML = `<span class="pop">+${coinsEarned} 🪙</span>` + (starsEarned > 0 ? `<span class="pop">+${starsEarned} ⭐</span>` : '');
+
+  const toasts = document.getElementById('badge-toasts');
+  toasts.innerHTML = "";
+  newBadges.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'badge-toast';
+    div.textContent = `${b.icon} Badge earned: ${b.name}!`;
+    toasts.appendChild(div);
+  });
+  if (newlyUnlockedTiers.length){
+    const div = document.createElement('div');
+    div.className = 'badge-toast';
+    div.textContent = `🎉 New topics unlocked: ${newlyUnlockedTiers.join(', ')}!`;
+    toasts.appendChild(div);
+  }
+
+  const bestNote = document.getElementById('best-note');
+  if (isNewBest){ bestNote.classList.remove('hidden'); bestNote.textContent = "🏆 New best score!"; }
+  else { bestNote.classList.add('hidden'); }
+
+  const msgs = [
+    "Great focus — every round makes the rules stick faster.",
+    "Speed comes with practice — that was a solid go!",
+    "Nice work — try the same topic again to beat this score.",
+    "Good effort! Small daily rounds beat one long grind."
+  ];
+  document.getElementById('end-msg').textContent = pick(msgs);
+}
+
+document.getElementById('start-btn').onclick = startQuiz;
+document.getElementById('again-btn').onclick = startQuiz;
+document.getElementById('menu-link').onclick = () => {
+  document.getElementById('end-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+  renderTopicGrid();
+};
+document.getElementById('progress-link').onclick = () => {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('progress-screen').classList.remove('hidden');
+  renderProgressScreen();
+};
+document.getElementById('tools-link').onclick = () => {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('tools-screen').classList.remove('hidden');
+  renderNinjaTools();
+};
+document.getElementById('tools-back-link').onclick = () => {
+  document.getElementById('tools-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+};
+document.getElementById('scorecard-link').onclick = () => {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('scorecard-screen').classList.remove('hidden');
+  renderScoreCard();
+};
+document.getElementById('scorecard-back-link').onclick = () => {
+  document.getElementById('scorecard-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+};
+document.getElementById('progress-back-link').onclick = () => {
+  document.getElementById('progress-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+};
+document.getElementById('quit-btn').onclick = quitRound;
+document.getElementById('reset-link').onclick = async () => {
+  const confirmed = await askConfirm("Reset ALL progress? Coins, stars, badges, levels and best scores will be lost — this can't be undone.");
+  if (!confirmed) return;
+  bestScores = {};
+  topicLevels = {};
+  progress = { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, badges:[], bestStreaks:{}, playerName: progress.playerName, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{} };
+  lsSet('number-ninja-best-scores', bestScores);
+  lsSet('number-ninja-topic-levels', topicLevels);
+  lsSet('number-ninja-progress', progress);
+  updateStatsBar();
+  document.getElementById('progress-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+  renderTopicGrid();
+};
+document.getElementById('player-chip').onclick = () => {
+  document.getElementById('name-input').value = progress.playerName || '';
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('name-screen').classList.remove('hidden');
+  document.getElementById('name-input').focus();
+};
+
+async function submitName(){
+  const val = document.getElementById('name-input').value.trim();
+  progress.playerName = val || "Champion";
+  updateDailyStreak();
+  await saveProgress();
+  updateStatsBar();
+  updateGreeting();
+  document.getElementById('name-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+  renderTopicGrid();
+  updateStartBtn();
+}
+document.getElementById('name-submit-btn').onclick = submitName;
+document.getElementById('name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitName();
+});
+
+function renderProgressScreen(){
+  document.getElementById('p-coins').textContent = progress.coins;
+  document.getElementById('p-stars').textContent = progress.stars;
+  document.getElementById('p-streak').textContent = progress.dailyStreak || 0;
+  document.getElementById('p-correct').textContent = progress.totalCorrect;
+
+  // Levels — only for topics she's actually unlocked, so nothing is spoiled
+  const levelRows = document.getElementById('level-rows');
+  levelRows.innerHTML = "";
+  const visibleTopics = ['mixed', ...unlockedTierTopics()];
+  visibleTopics.forEach(key => {
+    if (!adaptiveTopics.has(key)) return;
+    const lvl = topicLevels[key] || 1;
+    const streak = progress.bestStreaks[key] || 0;
+    const row = document.createElement('div');
+    row.className = 'level-row';
+    const dots = Array.from({length:5}, (_,i)=> `<span class="${i < lvl ? 'filled' : ''}">●</span>`).join(' ');
+    row.innerHTML = `<span>${topics[key].emoji} ${topics[key].label}</span><span class="dots">${dots}</span>`;
+    row.title = `Best streak: ${streak}`;
+    levelRows.appendChild(row);
+  });
+
+  // Badges — earned ones shown fully, remaining count shown without spoiling which ones
+  const earnedBadges = BADGES.filter(b => progress.badges.includes(b.id));
+  const remaining = BADGES.length - earnedBadges.length;
+  document.getElementById('badge-count').textContent = `(${earnedBadges.length}/${BADGES.length} earned)`;
+  const grid = document.getElementById('badge-grid');
+  grid.innerHTML = "";
+  earnedBadges.forEach(b => {
+    const tile = document.createElement('div');
+    tile.className = 'badge-tile';
+    tile.innerHTML = `<span class="bicon">${b.icon}</span>${b.name}`;
+    grid.appendChild(tile);
+  });
+  for (let i=0; i<remaining; i++){
+    const tile = document.createElement('div');
+    tile.className = 'badge-tile badge-locked';
+    tile.innerHTML = `<span class="bicon">❔</span>???`;
+    grid.appendChild(tile);
+  }
+}
+
+// ---------------- Init ----------------
+(async function init(){
+  await loadBests();
+  if (!progress.playerName){
+    document.getElementById('name-screen').classList.remove('hidden');
+    document.getElementById('name-input').focus();
+    return;
+  }
+  updateDailyStreak();
+  await saveProgress();
+  updateStatsBar();
+  updateGreeting();
+  document.getElementById('start-screen').classList.remove('hidden');
+  renderTopicGrid();
+  updateStartBtn();
+})();
+</script>
+</body>
+</html>
