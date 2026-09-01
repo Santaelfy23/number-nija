@@ -210,13 +210,37 @@
   .stats-bar .stat { display:flex; align-items:center; gap:4px; }
   .stats-link {
     text-align: center;
-    margin-top: 4px;
-    margin-bottom: 14px;
     color: var(--accent);
     cursor: pointer;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
+  .stats-links-row {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    margin-bottom: 14px;
+  }
+  .data-controls-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .data-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .data-btn:hover { border-color: var(--accent); }
+  .data-btn-danger { color: var(--wrong); border-color: rgba(248,113,113,0.35); }
   .earned-row {
     display: flex;
     justify-content: center;
@@ -427,7 +451,7 @@
   <div id="name-screen" class="card hidden">
     <div style="font-weight:700; font-size:1.1rem; text-align:center; margin-bottom:6px;">What's your name?</div>
     <div style="text-align:center; color:var(--sub); font-size:0.9rem; margin-bottom:4px;">Saves on this device only — no account, no login.</div>
-    <input type="text" id="name-input" class="name-input" placeholder="Type your name..." maxlength="20">
+    <input type="text" id="name-input" class="name-input" placeholder="Type your name..." maxlength="20" autocomplete="off">
     <button class="big-btn" id="name-submit-btn">Let's go!</button>
   </div>
 
@@ -437,12 +461,20 @@
     <div class="stats-bar">
       <div class="stat">🪙 <span id="coin-count">0</span></div>
       <div class="stat">⭐ <span id="star-count">0</span></div>
-      <div class="stat">🔥 <span id="daily-streak">0</span>d</div>
+      <div class="stat">⚡ <span id="daily-streak">0</span>d</div>
     </div>
-    <div class="stats-link" id="progress-link">🏆 My Progress</div>
-    <div class="stats-link" id="tools-link">🥷 Ninja Tools</div>
-    <div class="stats-link" id="scorecard-link">📊 Score Card</div>
-    <div class="lb-note">Saved on this device only — no login, no account.</div>
+    <div class="stats-links-row">
+      <div class="stats-link" id="progress-link">🏆 My Progress</div>
+      <div class="stats-link" id="tools-link">🛠️ Ninja Tools</div>
+      <div class="stats-link" id="scorecard-link">📊 Score Card</div>
+    </div>
+
+    <div class="data-controls-row">
+      <div class="data-btn" id="save-btn">💾 Save</div>
+      <div class="data-btn" id="restore-btn">🔁 Restore</div>
+      <div class="data-btn data-btn-danger" id="reset-btn">🗑️ Reset</div>
+    </div>
+    <div class="lb-note hidden" id="data-status"></div>
 
     <div style="font-weight:700; margin-bottom:10px;">Pick a topic</div>
     <div id="topic-sections"></div>
@@ -463,7 +495,7 @@
       <div>Score: <span id="score">0</span></div>
       <div id="level-badge" class="level-badge hidden">Lv <span id="level-num">1</span></div>
       <div class="timer" id="timer">60</div>
-      <div class="streak" id="streak">🔥 0</div>
+      <div class="streak" id="streak">⚡ 0</div>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:100%"></div></div>
     <div class="question-text" id="question-text">Loading...</div>
@@ -493,7 +525,7 @@
     <div class="progress-grid">
       <div class="progress-tile"><div class="num" id="p-coins">0</div><div class="lbl">🪙 Coins</div></div>
       <div class="progress-tile"><div class="num" id="p-stars">0</div><div class="lbl">⭐ Stars</div></div>
-      <div class="progress-tile"><div class="num" id="p-streak">0</div><div class="lbl">🔥 Day streak</div></div>
+      <div class="progress-tile"><div class="num" id="p-streak">0</div><div class="lbl">⚡ Day streak</div></div>
       <div class="progress-tile"><div class="num" id="p-correct">0</div><div class="lbl">✅ Total correct</div></div>
     </div>
     <div style="font-weight:700; margin-top:10px;">Levels by topic</div>
@@ -506,7 +538,7 @@
 
   <!-- NINJA TOOLS SHOP -->
   <div id="tools-screen" class="card hidden">
-    <div style="font-weight:800; font-size:1.2rem; text-align:center; margin-bottom:4px;">🥷 Ninja Tools</div>
+    <div style="font-weight:800; font-size:1.2rem; text-align:center; margin-bottom:4px;">🛠️ Ninja Tools</div>
     <div class="lb-note">Spend coins to unlock tools for your collection.</div>
     <div class="stats-bar" style="justify-content:center; gap:20px;">
       <div class="stat">🪙 <span id="tools-coin-count">0</span></div>
@@ -1012,8 +1044,8 @@ function currentMixKeys(){
 // ---------------- Rewards: badges ----------------
 const BADGES = [
   { id: "first_round", icon: "🎯", name: "First Round", desc: "Complete your first round", check: (p) => p.roundsPlayed >= 1 },
-  { id: "hot_streak", icon: "🔥", name: "Hot Streak", desc: "Get 5 in a row in one round", check: (p, ctx) => ctx.bestStreakThisRound >= 5 },
-  { id: "on_fire", icon: "🔥", name: "On Fire", desc: "Get 10 in a row in one round", check: (p, ctx) => ctx.bestStreakThisRound >= 10 },
+  { id: "hot_streak", icon: "⚡", name: "Hot Streak", desc: "Get 5 in a row in one round", check: (p, ctx) => ctx.bestStreakThisRound >= 5 },
+  { id: "on_fire", icon: "⚡", name: "On Fire", desc: "Get 10 in a row in one round", check: (p, ctx) => ctx.bestStreakThisRound >= 10 },
   { id: "level_3", icon: "⬆️", name: "Leveling Up", desc: "Reach Level 3 in any topic", check: () => Object.values(topicLevels || {}).some(l => l >= 3) },
   { id: "level_5", icon: "🚀", name: "Maxed Out", desc: "Reach Level 5 in any topic", check: () => Object.values(topicLevels || {}).some(l => l >= 5) },
   { id: "tier2", icon: "🗝️", name: "Key Finder", desc: "Unlock the Conversions tier", check: () => isTierUnlocked(1) },
@@ -1407,7 +1439,7 @@ function handleAnswer(opt, btnEl){
         levelMsg = " ⬆️ Level up!";
       }
     }
-    document.getElementById('feedback').textContent = (state.streak >= 3 ? `🔥 Nice! ${state.streak} in a row!` : "✅ Correct!") + levelMsg;
+    document.getElementById('feedback').textContent = (state.streak >= 3 ? `⚡ Nice! ${state.streak} in a row!` : "✅ Correct!") + levelMsg;
   } else {
     state.streak = 0;
     if (adaptive){
@@ -1420,7 +1452,7 @@ function handleAnswer(opt, btnEl){
     document.getElementById('feedback').textContent = `Not quite — it was ${state.current.correct}${levelMsg}`;
   }
   document.getElementById('score').textContent = state.score;
-  document.getElementById('streak').textContent = "🔥 " + state.streak;
+  document.getElementById('streak').textContent = "⚡ " + state.streak;
   if (adaptive) document.getElementById('level-num').textContent = state.level;
   setTimeout(() => { if (state.timerId) nextQuestion(); }, 750);
 }
@@ -1435,7 +1467,7 @@ function startQuiz(){
   document.getElementById('end-screen').classList.add('hidden');
   document.getElementById('quiz-screen').classList.remove('hidden');
   document.getElementById('score').textContent = "0";
-  document.getElementById('streak').textContent = "🔥 0";
+  document.getElementById('streak').textContent = "⚡ 0";
   document.getElementById('timer').textContent = state.timeLeft;
   document.getElementById('progress-fill').style.width = "100%";
   const badge = document.getElementById('level-badge');
@@ -1473,7 +1505,7 @@ async function endQuiz(quit){
   document.getElementById('end-topic').textContent = topics[selectedTopic].label + (quit ? ` · ended early` : ` · ${roundSeconds}s round`);
   document.getElementById('end-score').textContent = state.score;
   const adaptive = currentIsAdaptive();
-  document.getElementById('end-detail').textContent = `${state.score} correct out of ${state.answered} answered · best streak 🔥 ${state.bestStreak}` + (adaptive ? ` · reached Lv ${state.peakLevel}` : '');
+  document.getElementById('end-detail').textContent = `${state.score} correct out of ${state.answered} answered · best streak ⚡ ${state.bestStreak}` + (adaptive ? ` · reached Lv ${state.peakLevel}` : '');
 
   const unlockedBefore = TIERS.map((t,i) => isTierUnlocked(i));
   const isNewBest = await saveBest(selectedTopic, state.score);
@@ -1564,7 +1596,7 @@ document.getElementById('progress-back-link').onclick = () => {
   document.getElementById('start-screen').classList.remove('hidden');
 };
 document.getElementById('quit-btn').onclick = quitRound;
-document.getElementById('reset-link').onclick = async () => {
+async function resetAllProgress(){
   const confirmed = await askConfirm("Reset ALL progress? Coins, stars, badges, levels and best scores will be lost — this can't be undone.");
   if (!confirmed) return;
   bestScores = {};
@@ -1577,12 +1609,40 @@ document.getElementById('reset-link').onclick = async () => {
   document.getElementById('progress-screen').classList.add('hidden');
   document.getElementById('start-screen').classList.remove('hidden');
   renderTopicGrid();
+  flashDataStatus('Progress reset.');
+}
+document.getElementById('reset-link').onclick = resetAllProgress;
+
+function flashDataStatus(msg){
+  const el = document.getElementById('data-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  clearTimeout(flashDataStatus._t);
+  flashDataStatus._t = setTimeout(() => el.classList.add('hidden'), 2200);
+}
+document.getElementById('save-btn').onclick = async () => {
+  lsSet('number-ninja-best-scores', bestScores);
+  lsSet('number-ninja-topic-levels', topicLevels);
+  await saveProgress();
+  flashDataStatus('Saved.');
 };
+document.getElementById('restore-btn').onclick = async () => {
+  await loadBests();
+  updateStatsBar();
+  updateGreeting();
+  renderTopicGrid();
+  flashDataStatus('Restored from this device.');
+};
+document.getElementById('reset-btn').onclick = resetAllProgress;
+
 document.getElementById('player-chip').onclick = () => {
   document.getElementById('name-input').value = progress.playerName || '';
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('name-screen').classList.remove('hidden');
-  document.getElementById('name-input').focus();
+  const input = document.getElementById('name-input');
+  input.focus();
+  input.select();
 };
 
 async function submitName(){
