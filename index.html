@@ -187,6 +187,8 @@
   .opt-btn.correct { background: rgba(52,211,153,0.35); border-color: var(--accent2); }
   .opt-btn.wrong { background: rgba(248,113,113,0.35); border-color: var(--wrong); }
   .opt-btn:disabled { cursor: default; }
+  button:focus { outline: none; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .feedback { text-align:center; margin-top: 10px; min-height: 20px; font-weight: 600; color: var(--sub); }
 
@@ -442,6 +444,17 @@
   .revise-shape-label svg { flex-shrink: 0; color: var(--accent2); }
   .revise-shape-row .rv { color: var(--sub); font-weight: 500; font-size: 0.82rem; max-width: 55%; }
   .revise-note { color: var(--sub); font-size: 0.82rem; margin-top: 8px; }
+  .revise-numblock { margin-bottom: 14px; }
+  .revise-numtitle { font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; }
+  .revise-numlist {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--sub);
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 8px 10px;
+    word-spacing: 2px;
+  }
   .revise-practice-btn {
     margin-top: 10px;
     display: inline-block;
@@ -489,14 +502,23 @@
   }
   .sc-strength { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.35); }
   .sc-focus { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35); }
+  .sc-fast { background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.35); }
+  .sc-slow { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.35); }
   .sc-callout-title { font-weight: 700; margin-bottom: 6px; font-size: 0.9rem; }
   .sc-callout-item { font-size: 0.88rem; margin-bottom: 3px; }
   .sc-row {
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sc-row-top {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 4px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sc-row-bottom {
+    margin-top: 3px;
+    font-size: 0.75rem;
+    color: var(--sub);
   }
   .sc-row .sc-label { flex: 0 0 46%; font-size: 0.85rem; }
   .sc-row .sc-bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
@@ -663,6 +685,7 @@
       <span class="review-label">Correct answer</span>
       <span class="review-pill review-pill-correct" id="review-correct-answer"></span>
     </div>
+    <div class="hidden" id="review-hint" style="margin-top:10px;"></div>
     <button class="big-btn" id="review-next-btn">Next →</button>
   </div>
 
@@ -1202,6 +1225,14 @@ const triSet = Array.from({length:15}, (_,i)=> (i+1)*(i+2)/2);
 const fibSet = (()=>{ const f=[1,1]; while(f.length<15) f.push(f[f.length-1]+f[f.length-2]); return [...new Set(f)]; })();
 const primeSet = Array.from({length:100}, (_,i)=>i+1).filter(isPrime);
 
+// Longer reference lists for the Revise tab only — kept separate from the sets above
+// so extending the table doesn't also make the quiz's number ranges bigger.
+const SQUARE_DISPLAY = Array.from({length:30}, (_,i)=> (i+1)*(i+1));
+const CUBE_DISPLAY = Array.from({length:20}, (_,i)=> (i+1)*(i+1)*(i+1));
+const TRI_DISPLAY = Array.from({length:30}, (_,i)=> (i+1)*(i+2)/2);
+const FIB_DISPLAY = (()=>{ const f=[1,1]; while(f.length<20) f.push(f[f.length-1]+f[f.length-2]); return f; })();
+const PRIME_DISPLAY = (()=>{ const arr=[]; let n=2; while(arr.length<30){ if (isPrime(n)) arr.push(n); n++; } return arr; })();
+
 function qSpecialNumbers(level=1){
   const easyKinds = [
     {name:"square", set:squareSet.filter(n=>n<=100), max:100},
@@ -1554,13 +1585,16 @@ function scoreCardData(){
     .filter(key => topics[key] && key !== 'mixed')
     .map(key => {
       const s = stats[key];
+      const timedCount = s.timedCount || 0;
       return {
         key,
         label: topics[key].label,
         emoji: topics[key].emoji,
         correct: s.correct,
         answered: s.answered,
-        accuracy: s.answered ? Math.round(100 * s.correct / s.answered) : 0
+        accuracy: s.answered ? Math.round(100 * s.correct / s.answered) : 0,
+        timedCount,
+        avgSeconds: timedCount ? (s.totalTimeMs / timedCount / 1000) : null
       };
     });
   rows.sort((a,b) => b.accuracy - a.accuracy);
@@ -1582,6 +1616,11 @@ function renderScoreCard(){
   const strengths = confident.filter(r => r.accuracy >= 75).slice(0, 3);
   const focusAreas = confident.filter(r => r.accuracy < 65).slice(-3).reverse();
 
+  const timedEnough = rows.filter(r => r.timedCount >= SC_MIN_SAMPLE);
+  const bySpeed = timedEnough.slice().sort((a,b) => a.avgSeconds - b.avgSeconds);
+  const fastest = bySpeed.slice(0, 3);
+  const slowest = bySpeed.length > 3 ? bySpeed.slice(-3).reverse() : [];
+
   if (strengths.length){
     const box = document.createElement('div');
     box.className = 'sc-callout sc-strength';
@@ -1596,8 +1635,22 @@ function renderScoreCard(){
       focusAreas.map(r => `<div class="sc-callout-item">${r.emoji} ${r.label} — ${r.accuracy}%</div>`).join('');
     callouts.appendChild(box);
   }
-  if (!strengths.length && !focusAreas.length){
-    callouts.innerHTML = `<div class="lb-note">Play a bit more on each topic (5+ questions) to see strengths and focus areas here.</div>`;
+  if (fastest.length){
+    const box = document.createElement('div');
+    box.className = 'sc-callout sc-fast';
+    box.innerHTML = `<div class="sc-callout-title">⚡ Fastest recall</div>` +
+      fastest.map(r => `<div class="sc-callout-item">${r.emoji} ${r.label} — ${r.avgSeconds.toFixed(1)}s avg</div>`).join('');
+    callouts.appendChild(box);
+  }
+  if (slowest.length){
+    const box = document.createElement('div');
+    box.className = 'sc-callout sc-slow';
+    box.innerHTML = `<div class="sc-callout-title">🐢 Could speed up</div>` +
+      slowest.map(r => `<div class="sc-callout-item">${r.emoji} ${r.label} — ${r.avgSeconds.toFixed(1)}s avg</div>`).join('');
+    callouts.appendChild(box);
+  }
+  if (!strengths.length && !focusAreas.length && !fastest.length){
+    callouts.innerHTML = `<div class="lb-note">Play a bit more on each topic (5+ questions) to see strengths, focus areas and speed here.</div>`;
   }
 
   rows.forEach(r => {
@@ -1605,9 +1658,14 @@ function renderScoreCard(){
     row.className = 'sc-row';
     const barColor = r.accuracy >= 75 ? 'var(--accent2)' : (r.accuracy >= 50 ? 'var(--accent)' : 'var(--wrong)');
     const enough = r.answered >= SC_MIN_SAMPLE;
-    row.innerHTML = `<div class="sc-label">${r.emoji} ${r.label}</div>` +
+    const speedEnough = r.timedCount >= SC_MIN_SAMPLE;
+    const speedText = speedEnough ? `⚡ ${r.avgSeconds.toFixed(1)}s avg per question` : `⚡ ${r.timedCount}/${SC_MIN_SAMPLE} timed so far`;
+    row.innerHTML = `<div class="sc-row-top">` +
+      `<div class="sc-label">${r.emoji} ${r.label}</div>` +
       `<div class="sc-bar-track"><div class="sc-bar-fill" style="width:${r.accuracy}%; background:${barColor};"></div></div>` +
-      `<div class="sc-pct">${enough ? r.accuracy + '%' : r.answered + '/' + SC_MIN_SAMPLE}</div>`;
+      `<div class="sc-pct">${enough ? r.accuracy + '%' : r.answered + '/' + SC_MIN_SAMPLE}</div>` +
+      `</div>` +
+      `<div class="sc-row-bottom">${speedText}</div>`;
     if (!enough) row.title = "A few more questions here will make this accurate";
     scRows.appendChild(row);
   });
@@ -1632,6 +1690,7 @@ function reviseContentFor(topicKey){
       return reviseRows([
         ["1 cm", "= 10 mm"], ["1 m", "= 100 cm"], ["1 m", "= 1000 mm"], ["1 km", "= 1000 m"]
       ]) + `<div class="revise-note">To go from a bigger unit to a smaller one, multiply. To go smaller → bigger, divide.</div>` +
+      `<div style="margin-top:8px;">${buildHintHtml('length')}</div>` +
       `<div class="revise-note" style="margin-top:10px; font-weight:700; color:var(--text);">Imperial (approx.)</div>` +
       reviseRows([
         ["1 inch", "≈ 2.5 cm"], ["1 foot", "≈ 30 cm"], ["1 yard", "≈ 90 cm"], ["1 mile", "≈ 1.6 km"], ["5 miles", "≈ 8 km"]
@@ -1640,6 +1699,7 @@ function reviseContentFor(topicKey){
       return reviseRows([
         ["1 g", "= 1000 mg"], ["1 kg", "= 1000 g"]
       ]) + `<div class="revise-note">Same rule: bigger → smaller is ×, smaller → bigger is ÷.</div>` +
+      `<div style="margin-top:8px;">${buildHintHtml('mass')}</div>` +
       `<div class="revise-note" style="margin-top:10px; font-weight:700; color:var(--text);">Imperial (approx.)</div>` +
       reviseRows([
         ["1 kg", "≈ 2.2 lb"], ["1 oz", "≈ 25 g"], ["1 lb", "≈ 450 g"]
@@ -1649,14 +1709,15 @@ function reviseContentFor(topicKey){
         ["1 cm", "= 10 mm"], ["1 cm²", "= 100 mm²"], ["1 cm³", "= 1000 mm³"],
         ["1 m", "= 100 cm"], ["1 m²", "= 10,000 cm²"], ["1 m³", "= 1,000,000 cm³"],
         ["1 km", "= 1000 m"], ["1 km²", "= 1,000,000 m²"], ["1 km³", "= 1,000,000,000 m³"]
-      ]) + `<div class="revise-note">Area squares the conversion factor, volume cubes it — e.g. cm→mm is ×10 for length, ×100 for area, ×1000 for volume.</div>`;
+      ]) + `<div class="revise-note">Area squares the conversion factor, volume cubes it — e.g. cm→mm is ×10 for length, ×100 for area, ×1000 for volume.</div>` +
+      `<div style="margin-top:8px;">${buildHintHtml('areavol_units')}</div>`;
     case "time":
       return reviseRows([
         ["60 seconds", "= 1 minute"], ["60 minutes", "= 1 hour"], ["24 hours", "= 1 day"],
         ["7 days", "= 1 week"], ["14 days", "= 1 fortnight"], ["12 months", "= 1 year"],
         ["52 weeks", "= 1 year"], ["365 days", "= 1 year (366 in a leap year)"],
         ["10 years", "= 1 decade"], ["100 years", "= 1 century"], ["1000 years", "= 1 millennium"]
-      ]);
+      ]) + `<div style="margin-top:8px;">${buildHintHtml('time')}</div>`;
     case "clock":
       return reviseRows([
         ["24-hour clock", "goes 00:00 to 23:59, no am/pm"],
@@ -1675,15 +1736,16 @@ function reviseContentFor(topicKey){
         ["Example", "4681.52 → 4 thousands, 6 hundreds, 8 tens, 1 unit, 5 tenths, 2 hundredths"]
       ]) + `<div class="revise-note">Each column is worth 10× the one to its right.</div>`;
     case "special":
-      return reviseRows([
-        ["Square numbers", "a number × itself — 1, 4, 9, 16, 25, 36..."],
-        ["Cube numbers", "a number × itself × itself — 1, 8, 27, 64, 125..."],
-        ["Triangular numbers", "add one more each time — 1, 3, 6, 10, 15, 21..."],
-        ["Prime numbers", "only divides by 1 and itself — 2, 3, 5, 7, 11, 13..."],
-        ["Fibonacci numbers", "each number is the sum of the two before it — 1, 1, 2, 3, 5, 8, 13..."]
-      ]);
+      return `
+        <div class="revise-numblock"><div class="revise-numtitle">Square numbers (first 30)</div><div class="revise-numlist">${SQUARE_DISPLAY.join(', ')}</div></div>
+        <div class="revise-numblock"><div class="revise-numtitle">Cube numbers (first 20)</div><div class="revise-numlist">${CUBE_DISPLAY.join(', ')}</div></div>
+        <div class="revise-numblock"><div class="revise-numtitle">Triangular numbers (first 30)</div><div class="revise-numlist">${TRI_DISPLAY.join(', ')}</div></div>
+        <div class="revise-numblock"><div class="revise-numtitle">Prime numbers (first 30)</div><div class="revise-numlist">${PRIME_DISPLAY.join(', ')}</div></div>
+        <div class="revise-numblock"><div class="revise-numtitle">Fibonacci numbers (first 20)</div><div class="revise-numlist">${FIB_DISPLAY.join(', ')}</div></div>
+      `;
     case "fdp":
-      return reviseRows(fdpTable.map(e => [e.f, `${e.d}  ·  ${e.p}`]));
+      return reviseRows(fdpTable.map(e => [e.f, `${e.d}  ·  ${e.p}`])) +
+        `<div style="margin-top:8px;">${buildHintHtml('fdp')}</div>`;
     case "symbols":
       return reviseRows(symbolTable.map(s => [s.s, s.m]));
     case "hcflcm":
@@ -1692,7 +1754,7 @@ function reviseContentFor(topicKey){
         ["LCM", "Lowest Common Multiple — the smallest number both numbers divide evenly into"],
         ["Finding HCF", "list the factors of each number, pick the biggest one they share"],
         ["Finding LCM", "list multiples of each number, pick the smallest one they share"]
-      ]);
+      ]) + `<div style="margin-top:8px;">${buildHintHtml('hcflcm')}</div>`;
     case "shapes2d":
       return reviseShapeRows(SHAPES_2D, s => `${s.sides} sides · ${s.rightAngles} right ∠ · ${s.equalSides} equal sides · ${s.equalAngles} equal ∠`) +
         `<div class="revise-note">"Equal sides/angles" means how many are the same as another one in the same shape — not just whether ALL of them match.</div>`;
@@ -1962,6 +2024,7 @@ function nextQuestion(){
   const genFn = topics[topicKey].gen;
   state.current = genFn(state.level);
   state.current.topicKey = topicKey;
+  state.questionShownAt = Date.now();
   document.getElementById('question-text').textContent = state.current.text;
   const visualEl = document.getElementById('question-visual');
   if (state.current.visual){
@@ -1983,24 +2046,30 @@ function nextQuestion(){
   });
 }
 
-function recordTopicStat(topicKey, correct){
+function recordTopicStat(topicKey, correct, timeMs){
   progress.topicStats = progress.topicStats || {};
-  const s = progress.topicStats[topicKey] || { correct: 0, answered: 0 };
+  const s = progress.topicStats[topicKey] || { correct: 0, answered: 0, totalTimeMs: 0, timedCount: 0 };
   s.answered++;
   if (correct) s.correct++;
+  // sanity-clamp: ignore absurd outliers (e.g. tab left open) so one fluke doesn't skew her average
+  if (typeof timeMs === 'number' && timeMs >= 0 && timeMs < 60000){
+    s.totalTimeMs = (s.totalTimeMs || 0) + timeMs;
+    s.timedCount = (s.timedCount || 0) + 1;
+  }
   progress.topicStats[topicKey] = s;
 }
 
 function handleAnswer(opt, btnEl){
   if (!state.timerId) return; // round already ended
   const correct = String(opt) === String(state.current.correct);
+  btnEl.blur();
   document.querySelectorAll('.opt-btn').forEach(b => {
     b.disabled = true;
     if (b.textContent === String(state.current.correct)) b.classList.add('correct');
     else if (b === btnEl && !correct) b.classList.add('wrong');
   });
   state.answered++;
-  recordTopicStat(state.current.topicKey, correct);
+  recordTopicStat(state.current.topicKey, correct, Date.now() - (state.questionShownAt || Date.now()));
   let levelMsg = "";
   const adaptive = currentIsAdaptive();
   if (correct){
@@ -2020,7 +2089,7 @@ function handleAnswer(opt, btnEl){
     document.getElementById('feedback').textContent = (state.streak >= 3 ? `⚡ Nice! ${state.streak} in a row!` : "✅ Correct!") + levelMsg;
   } else {
     state.streak = 0;
-    state.wrongAnswers.push({ text: state.current.text, yourAnswer: String(opt), correct: String(state.current.correct) });
+    state.wrongAnswers.push({ text: state.current.text, yourAnswer: String(opt), correct: String(state.current.correct), topicKey: state.current.topicKey });
     if (adaptive){
       state.correctStreak = 0;
       if (state.level > 1){
@@ -2177,6 +2246,35 @@ async function endQuiz(quit){
 
 // ---- Review: step through wrong answers with the correct one shown, before the end screen ----
 let reviewIndex = 0;
+// Elimination hints — only for topics where a genuine, mathematically sound shortcut exists.
+// (Deliberately NOT a blanket "check the last digit" rule — that's actually unreliable for LCM specifically,
+// since LCM isn't simply a product. The real shortcut for HCF/LCM is a divisibility check, not a digit check.)
+const ELIMINATION_HINTS = {
+  hcflcm: "💡 Elimination tip: the HCF must divide evenly into BOTH numbers — rule out any option that doesn't. The LCM must be a multiple of BOTH numbers — rule out any option that isn't.",
+  length: "💡 Elimination tip: you're only multiplying or dividing by 10, 100 or 1000 — the digits stay the same, just shift. Rule out options with the wrong number of zeros.",
+  mass: "💡 Elimination tip: you're only multiplying or dividing by 1000 — the digits stay the same, just shift. Rule out options with the wrong number of zeros.",
+  areavol_units: "💡 Elimination tip: these conversions multiply by 10, 100, 1000 or bigger powers of ten — rule out options that don't have the right number of zeros.",
+  time: "💡 Elimination tip: converting to minutes or seconds means multiplying by 60 — the answer always ends in 0. Rule out any option that doesn't.",
+};
+
+// Estimation hints — for narrowing down once elimination has you choosing between 2 close options.
+// These lean on rounding to a "nice" nearby number and judging rough size, rather than exact calculation.
+const ESTIMATION_HINTS = {
+  hcflcm: "💡 Estimation tip: the HCF can never be bigger than the smaller of the two numbers. The LCM can never be smaller than the bigger of the two numbers — use that to rule out an option that's the wrong size.",
+  length: "💡 Estimation tip: round the number and picture the size — e.g. 4.8 m to cm should be roughly 480, not 48 or 4800. Use that to pick between two close options.",
+  mass: "💡 Estimation tip: round the number and picture the size — e.g. 2.9 kg to g should be roughly 2900, not 290 or 29000.",
+  areavol_units: "💡 Estimation tip: think about scale — area conversions jump by ×100, volume by ×1000. A rough sense of how much bigger the answer should be helps you pick between two close options.",
+  time: "💡 Estimation tip: round the number first — e.g. for 3.5 hours in minutes, think '3 × 60 = 180, so a bit more than 180' — narrows it down fast.",
+  fdp: "💡 Estimation tip: round to a nearby 'nice' fraction — 7/8 is almost 1 (so close to 100%), 1/3 is a bit more than a quarter. Use that to judge which of two close options fits.",
+};
+
+function buildHintHtml(topicKey){
+  const parts = [];
+  if (ELIMINATION_HINTS[topicKey]) parts.push(`<div class="revise-note">${ELIMINATION_HINTS[topicKey]}</div>`);
+  if (ESTIMATION_HINTS[topicKey]) parts.push(`<div class="revise-note" style="margin-top:6px;">${ESTIMATION_HINTS[topicKey]}</div>`);
+  return parts.join('');
+}
+
 function startReview(){
   reviewIndex = 0;
   document.getElementById('review-screen').classList.remove('hidden');
@@ -2188,6 +2286,15 @@ function showReviewItem(){
   document.getElementById('review-question').textContent = item.text;
   document.getElementById('review-your-answer').textContent = item.yourAnswer;
   document.getElementById('review-correct-answer').textContent = item.correct;
+  const hintEl = document.getElementById('review-hint');
+  const hintHtml = buildHintHtml(item.topicKey);
+  if (hintHtml){
+    hintEl.innerHTML = hintHtml;
+    hintEl.classList.remove('hidden');
+  } else {
+    hintEl.innerHTML = "";
+    hintEl.classList.add('hidden');
+  }
   const btn = document.getElementById('review-next-btn');
   btn.textContent = reviewIndex < state.wrongAnswers.length - 1 ? "Next →" : "See my results";
 }
