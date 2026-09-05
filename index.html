@@ -235,6 +235,7 @@
     justify-content: center;
     gap: 8px;
     margin-bottom: 6px;
+    flex-wrap: wrap;
   }
   .data-btn {
     background: rgba(255,255,255,0.06);
@@ -610,9 +611,10 @@
     <button class="big-btn" id="start-btn" disabled>Choose a topic to start</button>
 
     <div class="data-controls-row" style="margin-top:20px;">
-      <div class="data-btn" id="save-btn">💾 Save</div>
-      <div class="data-btn" id="restore-btn">🔁 Restore</div>
       <div class="data-btn data-btn-danger" id="reset-btn">🗑️ Reset</div>
+      <div class="data-btn" id="export-btn">⬇️ Export file</div>
+      <div class="data-btn" id="import-btn">⬆️ Import file</div>
+      <input type="file" id="import-file-input" accept=".json,application/json" style="display:none;">
     </div>
     <div class="lb-note hidden" id="data-status"></div>
   </div>
@@ -1745,7 +1747,10 @@ let selectedTopic = null;
 let roundSeconds = 60;
 let bestScores = {};
 let topicLevels = {};
-let progress = { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, badges:[], bestStreaks:{}, playerName:null, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{}, feedbackLog:[] };
+function defaultProgress(keepName){
+  return { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, badges:[], bestStreaks:{}, playerName: keepName || null, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{}, feedbackLog:[] };
+}
+let progress = defaultProgress();
 const MAX_LEVEL = 5;
 const LEVEL_UP_STREAK = 3; // consecutive correct answers needed to level up
 
@@ -2294,7 +2299,9 @@ async function resetAllProgress(){
   if (!confirmed) return;
   bestScores = {};
   topicLevels = {};
-  progress = { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, badges:[], bestStreaks:{}, playerName: progress.playerName, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{}, feedbackLog: progress.feedbackLog || [] };
+  const keepFeedback = progress.feedbackLog || [];
+  progress = defaultProgress(progress.playerName);
+  progress.feedbackLog = keepFeedback;
   lsSet('number-ninja-best-scores', bestScores);
   lsSet('number-ninja-topic-levels', topicLevels);
   lsSet('number-ninja-progress', progress);
@@ -2306,6 +2313,63 @@ async function resetAllProgress(){
 }
 document.getElementById('reset-link').onclick = resetAllProgress;
 
+// ---- Export / Import progress as a downloadable file ----
+function exportProgress(){
+  const payload = {
+    app: "number-ninja",
+    exportedAt: new Date().toISOString(),
+    progress: progress,
+    bestScores: bestScores,
+    topicLevels: topicLevels
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (progress.playerName || "player").replace(/[^a-z0-9]/gi, "_").toLowerCase();
+  a.href = url;
+  a.download = `number-ninja-progress-${safeName}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  flashDataStatus('Progress file downloaded.');
+}
+async function importProgressFile(file){
+  let payload;
+  try {
+    const text = await file.text();
+    payload = JSON.parse(text);
+  } catch(e){
+    flashDataStatus("Couldn't read that file — is it a Number Ninja export?");
+    return;
+  }
+  if (!payload || typeof payload !== 'object' || !payload.progress){
+    flashDataStatus("That file doesn't look like a Number Ninja progress export.");
+    return;
+  }
+  const confirmed = await askConfirm("Import this file? It will replace all current coins, stars, levels and best scores on this device with what's in the file.");
+  if (!confirmed) return;
+  progress = Object.assign(defaultProgress(), payload.progress);
+  bestScores = payload.bestScores || {};
+  topicLevels = payload.topicLevels || {};
+  lsSet('number-ninja-progress', progress);
+  lsSet('number-ninja-best-scores', bestScores);
+  lsSet('number-ninja-topic-levels', topicLevels);
+  updateStatsBar();
+  updateGreeting();
+  renderTopicGrid();
+  flashDataStatus('Progress imported!');
+}
+document.getElementById('export-btn').onclick = exportProgress;
+document.getElementById('import-btn').onclick = () => {
+  document.getElementById('import-file-input').click();
+};
+document.getElementById('import-file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  e.target.value = ""; // allow re-selecting the same file later
+  if (file) importProgressFile(file);
+});
+
 function flashDataStatus(msg){
   const el = document.getElementById('data-status');
   if (!el) return;
@@ -2314,19 +2378,6 @@ function flashDataStatus(msg){
   clearTimeout(flashDataStatus._t);
   flashDataStatus._t = setTimeout(() => el.classList.add('hidden'), 2200);
 }
-document.getElementById('save-btn').onclick = async () => {
-  lsSet('number-ninja-best-scores', bestScores);
-  lsSet('number-ninja-topic-levels', topicLevels);
-  await saveProgress();
-  flashDataStatus('Saved.');
-};
-document.getElementById('restore-btn').onclick = async () => {
-  await loadBests();
-  updateStatsBar();
-  updateGreeting();
-  renderTopicGrid();
-  flashDataStatus('Restored from this device.');
-};
 document.getElementById('reset-btn').onclick = resetAllProgress;
 
 document.getElementById('player-chip').onclick = () => {
