@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -195,6 +194,7 @@
   .end-score { text-align: center; font-size: 2.4rem; font-weight: 800; color: var(--accent); margin: 6px 0; }
   .end-sub { text-align: center; color: var(--sub); margin-bottom: 6px; }
   .end-msg { text-align: center; font-size: 1.05rem; margin: 14px 0; }
+  .streak-note { text-align:center; background:#fff6e8; border:2px solid #ffd9a0; border-radius:12px; padding:8px 10px; margin-bottom:10px; font-weight:700; color:#8a4b00; font-size:0.9rem; }
   .best-note { text-align:center; color: var(--accent2); font-weight: 700; margin-bottom: 10px; }
 
   .back-link {
@@ -217,6 +217,19 @@
     font-size: 0.95rem;
   }
   .stats-bar .stat { display:flex; align-items:center; gap:4px; }
+  .streak-panel { background:#fff6e8; border:2px solid #ffd9a0; border-radius:16px; padding:12px 14px; margin:4px 0 16px; }
+  .streak-top { display:flex; align-items:center; gap:10px; }
+  .streak-top svg.flame { width:38px; height:38px; flex:none; }
+  .streak-big { font-weight:800; font-size:1.15rem; line-height:1.1; }
+  .streak-sub { font-size:0.82rem; color:#7a5a2a; margin-top:2px; }
+  .streak-days { display:flex; justify-content:space-between; margin-top:10px; }
+  .streak-day { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:0.7rem; color:#8a6d3b; font-weight:700; }
+  .streak-dot { width:22px; height:22px; border-radius:50%; background:#f0e3cc; display:flex; align-items:center; justify-content:center; }
+  .streak-dot.played { background:#ff9a1f; }
+  .streak-dot.shield { background:#7cc4f2; }
+  .streak-dot.today:not(.played) { background:#fff; border:2px dashed #ff9a1f; }
+  .streak-dot svg { width:12px; height:12px; }
+  .streak-shield { font-size:0.78rem; margin-top:8px; color:#3b6f94; font-weight:700; display:flex; align-items:center; gap:5px; }
   .stats-link {
     text-align: center;
     color: var(--accent);
@@ -620,6 +633,8 @@
       <div class="stats-link" id="feedback-link">💬 Feedback</div>
     </div>
 
+    <div class="streak-panel" id="streak-panel"></div>
+
     <div style="font-weight:700; margin-bottom:10px;">Pick a topic</div>
     <div id="topic-sections"></div>
 
@@ -666,6 +681,7 @@
     <div class="end-sub" id="end-detail">12 correct out of 15</div>
     <div class="earned-row" id="earned-row"></div>
     <div id="badge-toasts"></div>
+    <div class="streak-note hidden" id="streak-note"></div>
     <div class="best-note hidden" id="best-note">🏆 New best score!</div>
     <div class="end-msg" id="end-msg"></div>
     <button class="big-btn" id="again-btn">Play again</button>
@@ -1810,7 +1826,7 @@ let roundSeconds = 60;
 let bestScores = {};
 let topicLevels = {};
 function defaultProgress(keepName){
-  return { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, badges:[], bestStreaks:{}, playerName: keepName || null, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{}, feedbackLog:[] };
+  return { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, bestDailyStreak:0, playedDates:[], freezeDates:[], streakFreezes:0, badges:[], bestStreaks:{}, playerName: keepName || null, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{}, feedbackLog:[] };
 }
 let progress = defaultProgress();
 const MAX_LEVEL = 5;
@@ -1863,23 +1879,91 @@ async function saveLevel(topicKey, level){
 async function saveProgress(){
   lsSet('number-ninja-progress', progress);
 }
-function updateDailyStreak(){
+function parseDay(str){ const [y,m,d]=str.split('-').map(Number); return new Date(y,m-1,d); }
+function daysBetween(a,b){ return Math.round((parseDay(b)-parseDay(a))/86400000); }
+function shiftDay(str,n){ const d=parseDay(str); d.setDate(d.getDate()+n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+// Streak is still alive if she played yesterday/today, or missed exactly one day and has a rest-day shield.
+function streakAlive(){
+  if (!progress.lastPlayedDate || !(progress.dailyStreak > 0)) return false;
+  const gap = daysBetween(progress.lastPlayedDate, todayStr());
+  return gap <= 1 || (gap === 2 && (progress.streakFreezes || 0) > 0);
+}
+// Called on load: a dead streak shows as 0 (nothing else is changed).
+function expireStreakIfDead(){
+  if (progress.dailyStreak > 0 && !streakAlive()){
+    progress.dailyStreak = 0;
+  }
+}
+// Called when a round is finished: the streak only grows by actually playing, not by opening the page.
+function recordPlayToday(){
   const today = todayStr();
-  if (progress.lastPlayedDate === today) return; // already counted today
-  if (progress.lastPlayedDate){
-    const prev = new Date(progress.lastPlayedDate);
-    const cur = new Date(today);
-    const diffDays = Math.round((cur - prev) / 86400000);
-    progress.dailyStreak = diffDays === 1 ? (progress.dailyStreak || 0) + 1 : 1;
+  if (progress.lastPlayedDate === today) return null; // already counted today
+  progress.playedDates = progress.playedDates || [];
+  progress.freezeDates = progress.freezeDates || [];
+  let shieldUsed = false, shieldEarned = false;
+  if (progress.lastPlayedDate && progress.dailyStreak > 0){
+    const gap = daysBetween(progress.lastPlayedDate, today);
+    if (gap === 1){
+      progress.dailyStreak += 1;
+    } else if (gap === 2 && (progress.streakFreezes || 0) > 0){
+      progress.streakFreezes -= 1;
+      progress.freezeDates.push(shiftDay(today, -1));
+      progress.dailyStreak += 1;
+      shieldUsed = true;
+    } else {
+      progress.dailyStreak = 1;
+    }
   } else {
     progress.dailyStreak = 1;
   }
   progress.lastPlayedDate = today;
+  progress.playedDates.push(today);
+  progress.playedDates = progress.playedDates.slice(-60);
+  progress.freezeDates = progress.freezeDates.slice(-20);
+  const streak = progress.dailyStreak;
+  progress.bestDailyStreak = Math.max(progress.bestDailyStreak || 0, streak);
+  if (streak % 7 === 0 && (progress.streakFreezes || 0) < 1){ progress.streakFreezes = 1; shieldEarned = true; }
+  const bonus = Math.min(streak, 10); // daily bonus coins, grows with the streak
+  progress.coins += bonus;
+  return { streak, bonus, shieldUsed, shieldEarned };
+}
+const FLAME_PATH = "M12 2c1 4-4 6-4 11a6 6 0 0 0 12 0c0-3-2-4-2-7-2 1-3 3-3 3 0-3-1-5-3-7z";
+const SHIELD_PATH = "M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z";
+function renderStreakPanel(){
+  const el = document.getElementById('streak-panel');
+  if (!el) return;
+  const today = todayStr();
+  const alive = streakAlive();
+  const n = alive ? progress.dailyStreak : 0;
+  const playedToday = progress.lastPlayedDate === today;
+  const played = new Set(progress.playedDates || []);
+  if (progress.lastPlayedDate) played.add(progress.lastPlayedDate);
+  const shields = new Set(progress.freezeDates || []);
+  const flameColor = playedToday ? '#ff7a00' : (n > 0 ? '#c9b99a' : '#d9d2c3');
+  let title, sub;
+  if (n === 0){ title = 'Start a streak!'; sub = 'Play one round today to light your flame.'; }
+  else if (playedToday){ title = `${n} day streak`; sub = n >= (progress.bestDailyStreak||0) && n > 1 ? "Today's done — that's your best yet!" : "Today's done — see you tomorrow!"; }
+  else { title = `${n} day streak`; sub = 'Play a round today to keep it going!'; }
+  const letters = ['S','M','T','W','T','F','S'];
+  let dots = '';
+  for (let i = 6; i >= 0; i--){
+    const d = shiftDay(today, -i);
+    const isP = played.has(d), isS = shields.has(d) && !isP;
+    const cls = 'streak-dot' + (isP ? ' played' : '') + (isS ? ' shield' : '') + (i === 0 ? ' today' : '');
+    const icon = isP ? `<svg viewBox="0 0 24 24" fill="#fff"><path d="${FLAME_PATH}"/></svg>` : (isS ? `<svg viewBox="0 0 24 24" fill="#fff"><path d="${SHIELD_PATH}"/></svg>` : '');
+    dots += `<div class="streak-day"><div class="${cls}">${icon}</div>${i === 0 ? 'Today' : letters[parseDay(d).getDay()]}</div>`;
+  }
+  const shieldLine = (progress.streakFreezes || 0) > 0
+    ? `<div class="streak-shield"><svg viewBox="0 0 24 24" width="14" height="14" fill="#3b6f94"><path d="${SHIELD_PATH}"/></svg>Rest-day shield ready — it saves your streak if you miss one day.</div>`
+    : (n > 0 ? `<div class="streak-shield" style="color:#9a7b4a;">Reach a 7-day streak to earn a rest-day shield.</div>` : '');
+  const best = (progress.bestDailyStreak || 0) > 0 ? ` · best ${progress.bestDailyStreak}` : '';
+  el.innerHTML = `<div class="streak-top"><svg class="flame" viewBox="0 0 24 24" fill="${flameColor}"><path d="${FLAME_PATH}"/></svg><div><div class="streak-big">${title}</div><div class="streak-sub">${sub}${best}</div></div></div><div class="streak-days">${dots}</div>${shieldLine}`;
 }
 function updateStatsBar(){
   document.getElementById('coin-count').textContent = progress.coins;
   document.getElementById('star-count').textContent = progress.stars;
-  document.getElementById('daily-streak').textContent = progress.dailyStreak || 0;
+  document.getElementById('daily-streak').textContent = streakAlive() ? progress.dailyStreak : 0;
+  renderStreakPanel();
 }
 function updateGreeting(){
   const name = progress.playerName;
@@ -2199,14 +2283,24 @@ async function endQuiz(quit){
   const prevTopicStreak = progress.bestStreaks[selectedTopic] || 0;
   if (state.bestStreak > prevTopicStreak) progress.bestStreaks[selectedTopic] = state.bestStreak;
 
+  const streakInfo = state.answered > 0 ? recordPlayToday() : null;
   const newBadges = checkNewBadges({ bestStreakThisRound: state.bestStreak });
   starsEarned += newBadges.length * 5; // reflect badge stars already added inside checkNewBadges to progress.stars
 
   await saveProgress();
   updateStatsBar();
 
+  const streakNote = document.getElementById('streak-note');
+  if (streakInfo){
+    let t = `Day ${streakInfo.streak} streak! +${streakInfo.bonus} bonus 💰`;
+    if (streakInfo.shieldUsed) t += ' · your rest-day shield saved the streak';
+    if (streakInfo.shieldEarned) t += ' · you earned a rest-day shield!';
+    streakNote.textContent = t;
+    streakNote.classList.remove('hidden');
+  } else { streakNote.classList.add('hidden'); }
+
   const earnedRow = document.getElementById('earned-row');
-  earnedRow.innerHTML = `<span class="pop">+${coinsEarned} 💰</span>` + (starsEarned > 0 ? `<span class="pop">+${starsEarned} ⭐</span>` : '');
+  earnedRow.innerHTML = `<span class="pop">+${coinsEarned + (streakInfo ? streakInfo.bonus : 0)} 💰</span>` + (starsEarned > 0 ? `<span class="pop">+${starsEarned} ⭐</span>` : '');
 
   const toasts = document.getElementById('badge-toasts');
   toasts.innerHTML = "";
@@ -2499,7 +2593,7 @@ document.getElementById('player-chip').onclick = () => {
 async function submitName(){
   const val = document.getElementById('name-input').value.trim();
   progress.playerName = val || "Champion";
-  updateDailyStreak();
+  expireStreakIfDead();
   await saveProgress();
   updateStatsBar();
   updateGreeting();
@@ -2563,7 +2657,7 @@ function renderProgressScreen(){
     document.getElementById('name-input').focus();
     return;
   }
-  updateDailyStreak();
+  expireStreakIfDead();
   await saveProgress();
   updateStatsBar();
   updateGreeting();
