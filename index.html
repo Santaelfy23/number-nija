@@ -182,7 +182,26 @@
     font-weight: 600;
     cursor: pointer;
   }
+  .options.five .opt-btn:last-child { grid-column: 1 / -1; }
+  .opt-letter { display:inline-block; min-width:22px; margin-right:8px; color:var(--accent); font-weight:800; }
   .opt-btn:hover { border-color: var(--accent); }
+  .opt-btn.ruled { opacity:0.45; text-decoration: line-through; border-style:dashed; }
+  .opt-btn.ruled-ok { background: rgba(52,211,153,0.18); border-color: var(--accent2); }
+  .opt-btn.ruled-bad { background: rgba(248,113,113,0.35); border-color: var(--wrong); }
+  .trap-box { background: rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.45); border-radius:12px; padding:9px 11px; margin-top:10px; font-size:0.88rem; }
+  .trap-box b { color: var(--wrong); }
+  .exam-row { display:flex; gap:10px; margin-top:10px; }
+  .exam-row .topic-btn { flex:1; }
+  .reveal-row { display:flex; gap:8px; align-items:flex-start; padding:7px 0; border-top:1px solid rgba(255,255,255,0.12); font-size:0.85rem; }
+  .reveal-row .rl { font-weight:800; color:var(--accent); min-width:18px; }
+  .reveal-row .rv { font-weight:700; min-width:64px; }
+  .reveal-row .rt { color:var(--sub); flex:1; }
+  .pace-q-row { display:flex; gap:8px; padding:7px 0; border-top:1px solid rgba(255,255,255,0.12); font-size:0.85rem; align-items:flex-start; }
+  .pace-q-row .pn { font-weight:800; min-width:30px; }
+  .pace-q-row .pt { min-width:44px; text-align:right; color:var(--sub); }
+  .pace-q-row .pd { flex:1; color:var(--sub); }
+  .pace-fill-warn { background: var(--wrong) !important; }
+
   .opt-btn.correct { background: rgba(52,211,153,0.35); border-color: var(--accent2); }
   .opt-btn.wrong { background: rgba(248,113,113,0.35); border-color: var(--wrong); }
   .opt-btn:disabled { cursor: default; }
@@ -194,7 +213,7 @@
   .end-score { text-align: center; font-size: 2.4rem; font-weight: 800; color: var(--accent); margin: 6px 0; }
   .end-sub { text-align: center; color: var(--sub); margin-bottom: 6px; }
   .end-msg { text-align: center; font-size: 1.05rem; margin: 14px 0; }
-  .streak-note { text-align:center; background:#fff6e8; border:2px solid #ffd9a0; border-radius:12px; padding:8px 10px; margin-bottom:10px; font-weight:700; color:#8a4b00; font-size:0.9rem; }
+  .streak-note { text-align:center; background:rgba(251,191,36,0.10); border:2px solid rgba(251,191,36,0.40); border-radius:12px; padding:8px 10px; margin-bottom:10px; font-weight:700; color:var(--accent); font-size:0.9rem; }
   .best-note { text-align:center; color: var(--accent2); font-weight: 700; margin-bottom: 10px; }
 
   .back-link {
@@ -217,19 +236,19 @@
     font-size: 0.95rem;
   }
   .stats-bar .stat { display:flex; align-items:center; gap:4px; }
-  .streak-panel { background:#fff6e8; border:2px solid #ffd9a0; border-radius:16px; padding:12px 14px; margin:4px 0 16px; }
+  .streak-panel { background:rgba(251,191,36,0.10); border:2px solid rgba(251,191,36,0.40); border-radius:16px; padding:12px 14px; margin:4px 0 16px; }
   .streak-top { display:flex; align-items:center; gap:10px; }
   .streak-top svg.flame { width:38px; height:38px; flex:none; }
   .streak-big { font-weight:800; font-size:1.15rem; line-height:1.1; }
-  .streak-sub { font-size:0.82rem; color:#7a5a2a; margin-top:2px; }
+  .streak-sub { font-size:0.82rem; color:var(--sub); margin-top:2px; }
   .streak-days { display:flex; justify-content:space-between; margin-top:10px; }
-  .streak-day { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:0.7rem; color:#8a6d3b; font-weight:700; }
-  .streak-dot { width:22px; height:22px; border-radius:50%; background:#f0e3cc; display:flex; align-items:center; justify-content:center; }
+  .streak-day { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:0.7rem; color:var(--sub); font-weight:700; }
+  .streak-dot { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; }
   .streak-dot.played { background:#ff9a1f; }
   .streak-dot.shield { background:#7cc4f2; }
-  .streak-dot.today:not(.played) { background:#fff; border:2px dashed #ff9a1f; }
+  .streak-dot.today:not(.played) { background:transparent; border:2px dashed #ff9a1f; }
   .streak-dot svg { width:12px; height:12px; }
-  .streak-shield { font-size:0.78rem; margin-top:8px; color:#3b6f94; font-weight:700; display:flex; align-items:center; gap:5px; }
+  .streak-shield { font-size:0.78rem; margin-top:8px; color:#9bd3f7; font-weight:700; display:flex; align-items:center; gap:5px; }
   .stats-link {
     text-align: center;
     color: var(--accent);
@@ -674,6 +693,50 @@
     </div>
   </div>
 
+  <!-- SPOT THE IMPOSSIBLE -->
+  <div id="spot-screen" class="card hidden">
+    <div class="hud">
+      <div>Question <span id="spot-q">1</span>/6</div>
+      <div class="timer" id="spot-timer">8</div>
+      <div>Score: <span id="spot-score">0</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="spot-fill" style="width:100%"></div></div>
+    <div class="lb-note" id="spot-instr">Don't solve it! Tap every answer you can rule out.</div>
+    <div class="question-text" id="spot-question"></div>
+    <div class="options five" id="spot-options"></div>
+    <button class="big-btn" id="spot-done-btn">Done</button>
+    <div class="hidden" id="spot-reveal"></div>
+    <button class="big-btn hidden" id="spot-next-btn">Next →</button>
+    <div class="row" style="margin-top:16px;"><div class="quit-btn" id="spot-quit-btn">✕ Quit drill</div></div>
+  </div>
+
+  <!-- EXAM PACE -->
+  <div id="pace-screen" class="card hidden">
+    <div class="hud">
+      <div>Q <span id="pace-q">1</span>/10</div>
+      <div class="timer" id="pace-timer">25</div>
+      <div>✅ <span id="pace-score">0</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="pace-fill" style="width:100%"></div></div>
+    <div class="question-text" id="pace-question"></div>
+    <div class="options five" id="pace-options"></div>
+    <div class="feedback" id="pace-feedback"></div>
+    <div class="row" style="margin-top:16px;"><div class="quit-btn" id="pace-quit-btn">✕ Quit</div></div>
+  </div>
+
+  <!-- EXAM RESULTS (shared by Spot drill and Exam Pace) -->
+  <div id="exam-result-screen" class="card hidden">
+    <div class="end-sub" id="er-title">Exam Pace</div>
+    <div class="end-score" id="er-score">0</div>
+    <div class="end-sub" id="er-detail"></div>
+    <div class="earned-row" id="er-earned"></div>
+    <div class="streak-note hidden" id="er-streak"></div>
+    <div id="er-toasts"></div>
+    <div id="er-list" style="margin-top:8px;"></div>
+    <button class="big-btn" id="er-again-btn">Go again</button>
+    <div class="back-link" id="er-menu-link">Back to topic menu</div>
+  </div>
+
   <!-- END SCREEN -->
   <div id="end-screen" class="card hidden">
     <div class="end-sub" id="end-topic">Divisibility Rules</div>
@@ -701,6 +764,7 @@
       <span class="review-label">Correct answer</span>
       <span class="review-pill review-pill-correct" id="review-correct-answer"></span>
     </div>
+    <div class="trap-box hidden" id="review-trap"></div>
     <div class="hidden" id="review-hint" style="margin-top:10px;"></div>
     <button class="big-btn" id="review-next-btn">Next →</button>
   </div>
@@ -1399,6 +1463,189 @@ function qHCFLCM(level=1){
   return { text: `What is the LCM of ${a} and ${b}?`, options: opts.map(String), correct: String(answer) };
 }
 
+
+// ---------------- Exam-style questions: 5 options (A–E), every wrong option is a tagged trap ----------------
+const TRAPS = {
+  partial:   "Partial product",
+  dropzero:  "Dropped zero",
+  extrazero: "Extra zero",
+  pow10:     "Out by a power of ten",
+  neighbour: "Neighbouring term",
+  lastdigit: "Wrong last digit",
+  forgot:    "Forgot a step",
+  pattern:   "Wrong pattern"
+};
+function fmtN(n){ return Number(n).toLocaleString('en-GB'); }
+function digitSum(n){ return String(n).split('').reduce((a,c)=>a+Number(c),0); }
+function approxN(n){
+  const mag = Math.pow(10, String(Math.round(n)).length - 1);
+  return fmtN(Math.round(n / mag) * mag);
+}
+function ordinal(n){
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return n + "th";
+  return n + (["th","st","nd","rd"][n % 10] || "th");
+}
+// Decides whether a wrong option could be ruled out WITHOUT calculating (right "family" check or a size check).
+function classifySpot(v, correct, mod, rem, modRule){
+  if (mod > 1 && v % mod !== rem) return { spot: true, rule: modRule(v) };
+  const r = v / correct;
+  if (r >= 4)    return { spot: true, rule: `Far too big — a rough estimate puts the answer near ${approxN(correct)}.` };
+  if (r <= 0.25) return { spot: true, rule: `Far too small — a rough estimate puts the answer near ${approxN(correct)}.` };
+  return { spot: false, rule: null };
+}
+// o: { text, correct (number), cands:[[value, trapKey, note]], mod, rem, modRule(v), explain, statKey }
+function buildExamQuestion(o){
+  const correct = o.correct;
+  const mod = o.mod || 1, rem = o.rem || 0;
+  const seen = new Set([correct]);
+  const chosen = [];
+  const tryAdd = (v, trap, note) => {
+    v = Math.round(v);
+    if (chosen.length >= 4 || !(v > 0) || seen.has(v)) return;
+    seen.add(v);
+    chosen.push({ v, trap, note });
+  };
+  shuffle(o.cands).forEach(c => tryAdd(c[0], c[1], c[2]));
+  // fallbacks so there are always 4 wrong options
+  let guard = 0;
+  while (chosen.length < 4 && guard++ < 60){
+    const k = randInt(1, 4) * (Math.random() < 0.5 ? -1 : 1);
+    const step = mod > 1 && mod <= 10 ? 1 : 1;
+    tryAdd(correct + k * step, 'lastdigit', `Close to the right size, but the last digit is off — you slipped on the final bit of working.`);
+  }
+  const opts = shuffle([{ v: correct, right: true }, ...chosen]);
+  const options = opts.map(x => fmtN(x.v));
+  const info = {};
+  chosen.forEach(c => {
+    const cl = classifySpot(c.v, correct, mod, rem, o.modRule);
+    info[fmtN(c.v)] = { label: TRAPS[c.trap], note: c.note, spot: cl.spot, rule: cl.rule };
+  });
+  return { text: o.text, options, correct: fmtN(correct), info, explain: o.explain, statKey: o.statKey, letters: true };
+}
+
+function qExMinutes(level=1){
+  if (level >= 3 && Math.random() < 0.4){
+    const h = pick([2,3,4,5,6,8,12,24]);
+    const c = h * 3600;
+    return buildExamQuestion({
+      statKey: 'ex_minutes', correct: c, mod: 100,
+      text: `How many seconds are there in ${h} hours?`,
+      cands: [
+        [h*60, 'partial', `${h} × 60 = ${fmtN(h*60)} only turns hours into minutes — you stopped before turning minutes into seconds.`],
+        [3600, 'partial', `3,600 is the seconds in ONE hour — you forgot to multiply by ${h}.`],
+        [c/10, 'dropzero', `You lost a zero: ${h} × 3,600 has two zeros on the end, not one.`],
+        [c*10, 'extrazero', `You added a zero too many on the end.`],
+        [(h+1)*3600, 'neighbour', `That's ${h+1} hours, not ${h} — right method, wrong number of hours.`],
+        [(h-1)*3600, 'neighbour', `That's ${h-1} ${h-1===1?'hour':'hours'}, not ${h} — right method, wrong number of hours.`],
+        [c*100, 'pow10', `Out by a factor of 100 — check how many zeros belong on the end.`]
+      ],
+      modRule: v => `3,600 × anything ends in 00, but ${fmtN(v)} doesn't.`,
+      explain: `${h} × 60 × 60 = ${fmtN(c)}. Quick checks: it must end in 00, and ${h} × 3,600 is roughly ${approxN(c)}.`
+    });
+  }
+  const spans = [['April',30],['June',30],['September',30],['November',30],['July',31],['March',31],['a non-leap February',28],['a fortnight',14],['a week',7]];
+  const [name, d] = pick(spans);
+  const c = d * 1440;
+  const where = (name === 'a fortnight' || name === 'a week' || name.startsWith('a non')) ? name : `the month of ${name}`;
+  return buildExamQuestion({
+    statKey: 'ex_minutes', correct: c, mod: 10,
+    text: `How many minutes are there in ${where}${name==='a fortnight'||name==='a week'?'':` (${d} days)`}?`,
+    cands: [
+      [d*24, 'partial', `${d} × 24 = ${fmtN(d*24)} is the number of HOURS — you stopped before turning hours into minutes.`],
+      [1440, 'partial', `60 × 24 = 1,440 is the minutes in just ONE day — you forgot to multiply by ${d}.`],
+      [d*60, 'partial', `${d} × 60 skips the 24 hours in every day.`],
+      [c/10, 'dropzero', `You lost a zero: ${d} × 1,440 is bigger than that.`],
+      [c*10, 'extrazero', `You added a zero too many on the end.`],
+      [(d+1)*1440, 'neighbour', `That's ${d+1} days, not ${d} — right method, wrong number of days.`],
+      [(d-1)*1440, 'neighbour', `That's ${d-1} days, not ${d} — right method, wrong number of days.`]
+    ],
+    modRule: v => `1,440 × anything ends in 0, but ${fmtN(v)} ends in ${v % 10}.`,
+    explain: `${d} days × 24 hours × 60 minutes = ${fmtN(c)}. Quick checks: it must end in 0, and ${d} × 1,440 is roughly ${approxN(c)}.`
+  });
+}
+
+function qExOrchard(level=1){
+  let r, t, k, tries = 0;
+  do {
+    r = pick(level >= 3 ? [6,8,10,12,14,16,18,20,24] : [4,6,8,10,12,16,20]);
+    t = pick([20,25,40,50]);
+    k = pick(level >= 3 ? [3,4,5,6,8,9,12,15] : [2,3,4,5,6,8]);
+    tries++;
+  } while ((r * t * k) % 100 !== 0 && tries < 200);
+  const c = r * t * k;
+  return buildExamQuestion({
+    statKey: 'ex_orchard', correct: c, mod: 100,
+    text: `An orchard has ${r} rows with ${t} apple trees in each row. Each tree gives ${k} kg of apples. How many kg of apples are there altogether?`,
+    cands: [
+      [r*t, 'forgot', `${r} × ${t} = ${fmtN(r*t)} is the number of trees — you forgot to multiply by the ${k} kg each tree gives.`],
+      [t*k, 'partial', `${t} × ${k} = ${fmtN(t*k)} is just ONE row — you forgot to multiply by the ${r} rows.`],
+      [r*k, 'partial', `${r} × ${k} = ${fmtN(r*k)} skips the ${t} trees in each row.`],
+      [c/10, 'dropzero', `You lost a zero from the answer.`],
+      [c*10, 'extrazero', `You added a zero too many on the end.`],
+      [(r+1)*t*k, 'neighbour', `That's ${r+1} rows, not ${r} — right method, wrong number of rows.`],
+      [(r-1)*t*k, 'neighbour', `That's ${r-1} rows, not ${r} — right method, wrong number of rows.`]
+    ],
+    modRule: v => `${t} × ${r} × ${k} makes a multiple of 100, but ${fmtN(v)} isn't one (it doesn't end in 00).`,
+    explain: `${r} × ${t} = ${fmtN(r*t)} trees, then × ${k} kg = ${fmtN(c)} kg. Quick checks: the answer must be a multiple of 100, and about ${approxN(c)} in size.`
+  });
+}
+
+function qExMatchsticks(level=1){
+  const ranges = {1:[5,8], 2:[6,10], 3:[8,14], 4:[10,18], 5:[12,25]};
+  const [lo, hi] = ranges[Math.min(5, Math.max(1, level))];
+  const n = randInt(lo, hi);
+  const T = x => x * (x + 1) / 2;
+  const c = 3 * T(n);
+  return buildExamQuestion({
+    statKey: 'ex_matchsticks', correct: c, mod: 3,
+    text: `Matchsticks are used to build bigger and bigger triangles. A side-1 triangle needs 3 matchsticks, a side-2 triangle needs 9, a side-3 triangle needs 18 and a side-4 triangle needs 30. How many matchsticks does a side-${n} triangle need?`,
+    cands: [
+      [T(n), 'forgot', `${fmtN(T(n))} is the triangular number T(${n}) — each step needs 3 matchsticks per triangle, so you forgot the × 3.`],
+      [3 * T(n-1), 'neighbour', `That's the side-${n-1} triangle — the term just before the one you wanted.`],
+      [3 * T(n+1), 'neighbour', `That's the side-${n+1} triangle — the term just after the one you wanted.`],
+      [3 * n * n, 'pattern', `3 × ${n}² uses square numbers, but this pattern grows by 3 × the triangular numbers (1, 3, 6, 10, …).`],
+      [c * 10, 'extrazero', `You added a zero too many on the end.`],
+      [c * 100, 'pow10', `Out by a factor of 100 — check the size with a rough estimate.`],
+      [c + pick([1,2,-1,-2]), 'lastdigit', `Right idea but one slip at the end — the answer must be a multiple of 3, and this isn't.`]
+    ],
+    modRule: v => `The answer is always 3 × a whole number, but ${fmtN(v)} has digits adding to ${digitSum(v)}, which isn't a multiple of 3.`,
+    explain: `The numbers are 3 × (1, 3, 6, 10, …) = 3 × triangular numbers. Side ${n}: 3 × (${n} × ${n+1} ÷ 2) = 3 × ${T(n)} = ${fmtN(c)}. Quick check: it must be a multiple of 3 (digits add to a multiple of 3).`
+  });
+}
+
+function qExSequence(level=1){
+  const d = pick(level >= 3 ? [3,4,5,6,7,8,9] : [3,4,5,6]);
+  const a = randInt(1, 15);
+  const n = randInt(level >= 3 ? 14 : 10, level >= 3 ? 40 : 25);
+  const term = i => a + d * (i - 1);
+  const c = term(n);
+  const rem = a % d;
+  const first = [term(1), term(2), term(3), term(4)].join(', ');
+  const modRule = v => {
+    if (d === 5){ const e = rem, f = rem + 5; return `Every term in this sequence ends in ${e} or ${f}, but ${fmtN(v)} ends in ${v % 10}.`; }
+    return `Every term leaves remainder ${rem} when divided by ${d}, but ${fmtN(v)} leaves remainder ${v % d}.`;
+  };
+  return buildExamQuestion({
+    statKey: 'ex_sequence', correct: c, mod: d, rem,
+    text: `Here is a number sequence: ${first}, … What is the ${ordinal(n)} term?`,
+    cands: [
+      [term(n+1), 'neighbour', `That's the ${ordinal(n+1)} term — one place too far along.`],
+      [term(n-1), 'neighbour', `That's the ${ordinal(n-1)} term — one place short.`],
+      [d * n, 'pattern', `${d} × ${n} = ${fmtN(d*n)} belongs to the sequence ${d}, ${2*d}, ${3*d}, … — but this sequence starts at ${a}.`],
+      [d * (n - 1), 'forgot', `${d} × ${n-1} = ${fmtN(d*(n-1))} counts the jumps but forgets to add the first term, ${a}.`],
+      [c * 10, 'extrazero', `You added a zero too many on the end.`],
+      [term(n+2), 'neighbour', `That's the ${ordinal(n+2)} term — two places too far along.`]
+    ],
+    modRule,
+    explain: `The rule is: start at ${a} and add ${d} each time, so the ${ordinal(n)} term = ${a} + ${n-1} × ${d} = ${fmtN(c)}. Quick check: every term has the same remainder (${rem}) when divided by ${d}.`
+  });
+}
+
+function qExam(level=1){
+  return pick([qExMinutes, qExOrchard, qExMatchsticks, qExSequence])(level);
+}
+
 const topics = {
   divisibility: { label: "Divisibility Rules", emoji: "🔢", gen: qDivisibility },
   length: { label: "Length (mm/cm/m/km)", emoji: "📏", gen: qLength },
@@ -1415,9 +1662,14 @@ const topics = {
   hcflcm: { label: "HCF & LCM", emoji: "🧩", gen: qHCFLCM },
   shapes2d: { label: "2D Shapes", emoji: "🔷", gen: qShapes2D },
   shapes3d: { label: "3D Shapes", emoji: "🧱", gen: qShapes3D },
-  mixed: { label: "Mixed Challenge", emoji: "🎲", gen: null }
+  mixed: { label: "Mixed Challenge", emoji: "🎲", gen: null },
+  exam: { label: "Exam-Style Questions", emoji: "📝", gen: qExam },
+  ex_minutes: { label: "Exam: time totals", emoji: "📝", gen: qExMinutes },
+  ex_orchard: { label: "Exam: multi-step word problems", emoji: "📝", gen: qExOrchard },
+  ex_matchsticks: { label: "Exam: matchstick patterns", emoji: "📝", gen: qExMatchsticks },
+  ex_sequence: { label: "Exam: sequences", emoji: "📝", gen: qExSequence }
 };
-const adaptiveTopics = new Set(["divisibility","length","mass","areavol_units","time","clock","roman","placevalue","special","fdp","hcflcm","shapes2d","shapes3d","mixed"]);
+const adaptiveTopics = new Set(["divisibility","length","mass","areavol_units","time","clock","roman","placevalue","special","fdp","hcflcm","shapes2d","shapes3d","mixed","exam"]);
 
 // ---- Tiers: groups unlock as a topic in the previous tier reaches Lv 3 ----
 const TIERS = [
@@ -1466,6 +1718,9 @@ const BADGES = [
   { id: "week_streak", icon: "🌟", name: "Week Streak", desc: "Play 7 days in a row", check: (p) => p.dailyStreak >= 7 },
   { id: "twoweek_streak", icon: "🌠", name: "Fortnight Streak", desc: "Play 14 days in a row", check: (p) => p.dailyStreak >= 14 },
   { id: "month_streak", icon: "🎇", name: "Month Streak", desc: "Play 30 days in a row", check: (p) => p.dailyStreak >= 30 },
+  { id: "pace_setter", icon: "⏱️", name: "Pace Setter", desc: "Answer all 10 Exam Pace questions inside 25 seconds", check: (p) => ((p.paceStats||{}).cleanRounds || 0) >= 1 },
+  { id: "exam_ready", icon: "🎓", name: "Exam Ready", desc: "Score 8+ out of 10 in Exam Pace, every question inside 25 seconds", check: (p) => ((p.paceStats||{}).readyRounds || 0) >= 1 },
+  { id: "sharp_eye", icon: "🎯", name: "Sharp Eye", desc: "Score 18+ in Spot the Impossible", check: (p) => ((p.spotStats||{}).best || 0) >= 18 },
   { id: "ten_rounds", icon: "🎮", name: "Regular Player", desc: "Play 10 rounds", check: (p) => (p.roundsPlayed || 0) >= 10 },
   { id: "fifty_rounds", icon: "🕹️", name: "Dedicated Player", desc: "Play 50 rounds", check: (p) => (p.roundsPlayed || 0) >= 50 },
   { id: "hundred_rounds", icon: "🎗️", name: "Veteran Player", desc: "Play 100 rounds", check: (p) => (p.roundsPlayed || 0) >= 100 },
@@ -1669,6 +1924,38 @@ function renderScoreCard(){
     callouts.innerHTML = `<div class="lb-note">Play a bit more on each topic (5+ questions) to see strengths, focus areas and speed here.</div>`;
   }
 
+  // Topics averaging over the 25-second exam limit
+  const overPace = timedEnough.filter(r => r.avgSeconds > PACE_SECONDS).sort((a,b) => b.avgSeconds - a.avgSeconds);
+  if (overPace.length){
+    const box = document.createElement('div');
+    box.className = 'sc-callout sc-slow';
+    box.innerHTML = `<div class="sc-callout-title">🚨 Over the ${PACE_SECONDS}s exam limit</div>` +
+      overPace.map(r => `<div class="sc-callout-item">${r.emoji} ${r.label} — ${r.avgSeconds.toFixed(1)}s avg</div>`).join('');
+    callouts.appendChild(box);
+  }
+  // Traps she falls for most
+  const trapEntries = Object.entries(progress.trapStats || {}).sort((a,b) => b[1] - a[1]);
+  const trapTotal = trapEntries.reduce((a,e) => a + e[1], 0);
+  const trapBox = document.createElement('div');
+  trapBox.className = 'sc-callout sc-focus';
+  if (trapTotal >= 3){
+    trapBox.innerHTML = `<div class="sc-callout-title">🪤 Traps you fall for most</div>` +
+      trapEntries.slice(0, 4).map(([label, n]) => `<div class="sc-callout-item">${label} — ${n} time${n>1?'s':''} (${Math.round(100*n/trapTotal)}%)</div>`).join('');
+  } else {
+    trapBox.innerHTML = `<div class="sc-callout-title">🪤 Traps you fall for most</div><div class="sc-callout-item">Play Exam-Style Questions or Exam Pace and this will show which traps catch you out.</div>`;
+  }
+  callouts.appendChild(trapBox);
+  const ps = progress.paceStats, ss = progress.spotStats;
+  if ((ps && ps.rounds) || (ss && ss.rounds)){
+    const box = document.createElement('div');
+    box.className = 'sc-callout sc-fast';
+    let inner = `<div class="sc-callout-title">⏱️ Exam training</div>`;
+    if (ps && ps.rounds) inner += `<div class="sc-callout-item">Exam Pace — best ${ps.bestCorrect}/10 · ${Math.round(100 * ps.inTime / ps.answered)}% answered inside ${PACE_SECONDS}s · ${ps.rounds} round${ps.rounds>1?'s':''}</div>`;
+    if (ss && ss.rounds) inner += `<div class="sc-callout-item">Spot the Impossible — best ${ss.best}/24 · ${ss.oops} time${ss.oops===1?'':'s'} ruled out the right answer</div>`;
+    box.innerHTML = inner;
+    callouts.appendChild(box);
+  }
+
   rows.forEach(r => {
     const row = document.createElement('div');
     row.className = 'sc-row';
@@ -1809,8 +2096,35 @@ function renderReviseScreen(){
     container.appendChild(item);
   });
   if (!keys.length){
-    container.innerHTML = `<div class="lb-note">Play a round first to unlock topics to revise.</div>`;
+    container.innerHTML = '';
   }
+  const tricks = document.createElement('div');
+  tricks.className = 'revise-item';
+  tricks.id = 'revise-item-examtricks';
+  tricks.innerHTML = `
+    <div class="revise-header" onclick="toggleRevise('examtricks')">
+      <span>✂️ Exam Tricks checklist</span>
+      <span class="chev">›</span>
+    </div>
+    <div class="revise-body hidden" id="revise-body-examtricks">
+      ${examTricksHtml()}
+      <div class="revise-practice-btn" onclick="document.getElementById('revise-screen').classList.add('hidden'); startSpotDrill();">Practise: Spot the Impossible →</div>
+    </div>`;
+  container.insertBefore(tricks, container.firstChild);
+}
+function examTricksHtml(){
+  const items = [
+    ["Multiples of 3", "Digits add up to a multiple of 3. (Matchstick patterns that are 3 × a triangular number must pass this.)"],
+    ["Multiples of 5", "Ends in 0 or 5. Multiples of 9: digits add up to a multiple of 9."],
+    ["Check the last digit", "In a × question, the last digit of the answer only depends on the last digits you multiplied. 24 × 35 → 4 × 5 = 20 → ends in 0."],
+    ["Size check", "Round and estimate: 24 × 31 ≈ 25 × 30 = 750. Cross out anything about 4× bigger or smaller."],
+    ["Trailing zeros", "Only when the LAST step is ×: the answer has at least as many zeros on the end as the numbers you multiplied. 25 × 8 × 50 must end in 00. Not valid after a ÷ or −."],
+    ["Partial-product trap", "An option that is just part of the multiplying (24 × 30 = 720, or 60 × 24 = 1,440 for 'a month') is too small — you still had a step left."],
+    ["Neighbouring-term trap", "In sequences and patterns, the terms just before and after the right one pass the digit checks. Count positions: term n = first + (n − 1) × step."],
+    ["Dropped or extra zero", "4,320 vs 43,200 vs 432,000: count the digits in your estimate first."]
+  ];
+  return items.map(([k, v]) => `<div style="padding:8px 0; border-top:1px solid rgba(255,255,255,0.12);"><div style="font-weight:700;">☐ ${k}</div><div class="revise-note" style="margin-top:2px;">${v}</div></div>`).join('') +
+    `<div class="revise-note">Use these <i>after</i> you read the question and <i>before</i> you start calculating — they can usually rule out two or three options.</div>`;
 }
 function practiceFromRevise(key){
   selectedTopic = key;
@@ -1826,7 +2140,7 @@ let roundSeconds = 60;
 let bestScores = {};
 let topicLevels = {};
 function defaultProgress(keepName){
-  return { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, bestDailyStreak:0, playedDates:[], freezeDates:[], streakFreezes:0, badges:[], bestStreaks:{}, playerName: keepName || null, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{}, feedbackLog:[] };
+  return { coins:0, stars:0, totalCorrect:0, totalAnswered:0, roundsPlayed:0, dailyStreak:0, lastPlayedDate:null, bestDailyStreak:0, playedDates:[], freezeDates:[], streakFreezes:0, badges:[], bestStreaks:{}, playerName: keepName || null, weeklyContribution:{weekKey:null, amount:0}, claimedSquadWeeks:[], lastLeaderBonusDate:null, ninjaTools:[], topicStats:{}, trapStats:{}, spotStats:{rounds:0,best:0,safe:0,oops:0}, paceStats:{rounds:0,bestCorrect:0,cleanRounds:0,readyRounds:0,inTime:0,answered:0}, feedbackLog:[] };
 }
 let progress = defaultProgress();
 const MAX_LEVEL = 5;
@@ -1939,7 +2253,7 @@ function renderStreakPanel(){
   const played = new Set(progress.playedDates || []);
   if (progress.lastPlayedDate) played.add(progress.lastPlayedDate);
   const shields = new Set(progress.freezeDates || []);
-  const flameColor = playedToday ? '#ff7a00' : (n > 0 ? '#c9b99a' : '#d9d2c3');
+  const flameColor = playedToday ? '#ff9a1f' : (n > 0 ? '#9a8f7a' : '#6b6590');
   let title, sub;
   if (n === 0){ title = 'Start a streak!'; sub = 'Play one round today to light your flame.'; }
   else if (playedToday){ title = `${n} day streak`; sub = n >= (progress.bestDailyStreak||0) && n > 1 ? "Today's done — that's your best yet!" : "Today's done — see you tomorrow!"; }
@@ -1954,8 +2268,8 @@ function renderStreakPanel(){
     dots += `<div class="streak-day"><div class="${cls}">${icon}</div>${i === 0 ? 'Today' : letters[parseDay(d).getDay()]}</div>`;
   }
   const shieldLine = (progress.streakFreezes || 0) > 0
-    ? `<div class="streak-shield"><svg viewBox="0 0 24 24" width="14" height="14" fill="#3b6f94"><path d="${SHIELD_PATH}"/></svg>Rest-day shield ready — it saves your streak if you miss one day.</div>`
-    : (n > 0 ? `<div class="streak-shield" style="color:#9a7b4a;">Reach a 7-day streak to earn a rest-day shield.</div>` : '');
+    ? `<div class="streak-shield"><svg viewBox="0 0 24 24" width="14" height="14" fill="#9bd3f7"><path d="${SHIELD_PATH}"/></svg>Rest-day shield ready — it saves your streak if you miss one day.</div>`
+    : (n > 0 ? `<div class="streak-shield" style="color:var(--sub);">Reach a 7-day streak to earn a rest-day shield.</div>` : '');
   const best = (progress.bestDailyStreak || 0) > 0 ? ` · best ${progress.bestDailyStreak}` : '';
   el.innerHTML = `<div class="streak-top"><svg class="flame" viewBox="0 0 24 24" fill="${flameColor}"><path d="${FLAME_PATH}"/></svg><div><div class="streak-big">${title}</div><div class="streak-sub">${sub}${best}</div></div></div><div class="streak-days">${dots}</div>${shieldLine}`;
 }
@@ -2024,6 +2338,7 @@ function renderTopicGrid(){
   mixedWrap.appendChild(mixedGrid);
   container.appendChild(mixedWrap);
 
+
   // Only ever show tiers that are unlocked — locked ones stay hidden entirely,
   // so new topics arrive as a surprise rather than a visible checklist.
   TIERS.forEach((tier, i) => {
@@ -2056,9 +2371,33 @@ function renderTopicGrid(){
   bonusSection.appendChild(bonusGrid);
   container.appendChild(bonusSection);
 
+  // Exam training — always visible
+  const exWrap = document.createElement('div');
+  exWrap.innerHTML = `<div style="font-weight:700; margin:18px 0 8px;">Exam training</div>`;
+  const exGrid = document.createElement('div');
+  exGrid.className = 'topic-grid';
+  exGrid.appendChild(makeTopicBtn('exam', false, ''));
+  exWrap.appendChild(exGrid);
+  const exRow = document.createElement('div');
+  exRow.className = 'exam-row';
+  const spotBtn = document.createElement('div');
+  spotBtn.className = 'topic-btn';
+  const ss = progress.spotStats || {};
+  spotBtn.innerHTML = `<span class="emoji">✂️</span>Spot the Impossible<span class="best">${ss.best ? 'Best: ' + ss.best + '/24' : '8 seconds each'}</span>`;
+  spotBtn.onclick = startSpotDrill;
+  const paceBtn = document.createElement('div');
+  paceBtn.className = 'topic-btn';
+  const ps = progress.paceStats || {};
+  paceBtn.innerHTML = `<span class="emoji">⏱️</span>Exam Pace<span class="best">${ps.bestCorrect ? 'Best: ' + ps.bestCorrect + '/10' : '10 Qs · 25s each'}</span>`;
+  paceBtn.onclick = startPace;
+  exRow.appendChild(spotBtn);
+  exRow.appendChild(paceBtn);
+  exWrap.appendChild(exRow);
+  container.appendChild(exWrap);
+
   // if the currently selected topic just got locked away somehow, clear it
   if (selectedTopic){
-    const allUnlockedKeys = new Set(['mixed', ...unlockedTierTopics(), ...BONUS_TOPICS]);
+    const allUnlockedKeys = new Set(['mixed', 'exam', ...unlockedTierTopics(), ...BONUS_TOPICS]);
     if (!allUnlockedKeys.has(selectedTopic)) selectedTopic = null;
   }
 }
@@ -2121,15 +2460,29 @@ function nextQuestion(){
   const optsDiv = document.getElementById('options');
   optsDiv.innerHTML = "";
   document.getElementById('feedback').textContent = "";
-  state.current.options.forEach(opt => {
+  optsDiv.className = 'options' + (state.current.options.length === 5 ? ' five' : '');
+  state.current.options.forEach((opt, i) => {
     const b = document.createElement('button');
     b.className = 'opt-btn';
-    b.textContent = opt;
+    b.dataset.val = String(opt);
+    if (state.current.letters){
+      const l = document.createElement('span');
+      l.className = 'opt-letter';
+      l.textContent = 'ABCDE'[i];
+      b.appendChild(l);
+      b.appendChild(document.createTextNode(String(opt)));
+    } else {
+      b.textContent = opt;
+    }
     b.onclick = () => handleAnswer(opt, b);
     optsDiv.appendChild(b);
   });
 }
 
+function recordTrap(label){
+  progress.trapStats = progress.trapStats || {};
+  progress.trapStats[label] = (progress.trapStats[label] || 0) + 1;
+}
 function recordTopicStat(topicKey, correct, timeMs){
   progress.topicStats = progress.topicStats || {};
   const s = progress.topicStats[topicKey] || { correct: 0, answered: 0, totalTimeMs: 0, timedCount: 0 };
@@ -2149,11 +2502,11 @@ function handleAnswer(opt, btnEl){
   btnEl.blur();
   document.querySelectorAll('.opt-btn').forEach(b => {
     b.disabled = true;
-    if (b.textContent === String(state.current.correct)) b.classList.add('correct');
+    if (b.dataset.val === String(state.current.correct)) b.classList.add('correct');
     else if (b === btnEl && !correct) b.classList.add('wrong');
   });
   state.answered++;
-  recordTopicStat(state.current.topicKey, correct, Date.now() - (state.questionShownAt || Date.now()));
+  recordTopicStat(state.current.statKey || state.current.topicKey, correct, Date.now() - (state.questionShownAt || Date.now()));
   let levelMsg = "";
   const adaptive = currentIsAdaptive();
   if (correct){
@@ -2173,7 +2526,10 @@ function handleAnswer(opt, btnEl){
     document.getElementById('feedback').textContent = (state.streak >= 3 ? `⚡ Nice! ${state.streak} in a row!` : "✅ Correct!") + levelMsg;
   } else {
     state.streak = 0;
-    state.wrongAnswers.push({ text: state.current.text, yourAnswer: String(opt), correct: String(state.current.correct), topicKey: state.current.topicKey });
+    const trapInfo = state.current.info && state.current.info[String(opt)];
+    if (trapInfo) recordTrap(trapInfo.label);
+    state.wrongAnswers.push({ text: state.current.text, yourAnswer: String(opt), correct: String(state.current.correct), topicKey: state.current.topicKey,
+      trap: trapInfo ? { label: trapInfo.label, note: trapInfo.note } : null, explain: state.current.explain || null });
     if (adaptive){
       state.correctStreak = 0;
       if (state.level > 1){
@@ -2181,7 +2537,7 @@ function handleAnswer(opt, btnEl){
         levelMsg = " — easing off a notch";
       }
     }
-    document.getElementById('feedback').textContent = `Not quite — it was ${state.current.correct}${levelMsg}`;
+    document.getElementById('feedback').textContent = `Not quite — it was ${state.current.correct}${trapInfo ? ' · ' + trapInfo.label + ' trap' : ''}${levelMsg}`;
   }
   document.getElementById('score').textContent = state.score;
   document.getElementById('streak').textContent = "⚡ " + state.streak;
@@ -2380,6 +2736,16 @@ function showReviewItem(){
   document.getElementById('review-question').textContent = item.text;
   document.getElementById('review-your-answer').textContent = item.yourAnswer;
   document.getElementById('review-correct-answer').textContent = item.correct;
+  const trapEl = document.getElementById('review-trap');
+  if (item.trap){
+    trapEl.innerHTML = `<b>You fell for the "${item.trap.label}" trap.</b><br>${item.trap.note}` + (item.explain ? `<div style="margin-top:6px; color:var(--sub);">${item.explain}</div>` : '');
+    trapEl.classList.remove('hidden');
+  } else if (item.explain){
+    trapEl.innerHTML = item.explain;
+    trapEl.classList.remove('hidden');
+  } else {
+    trapEl.classList.add('hidden');
+  }
   const hintEl = document.getElementById('review-hint');
   const hintHtml = buildHintHtml(item.topicKey);
   if (hintHtml){
@@ -2648,6 +3014,269 @@ function renderProgressScreen(){
     grid.appendChild(tile);
   }
 }
+
+
+// ---------------- Exam modes: Spot the Impossible & Exam Pace ----------------
+const SPOT_QUESTIONS = 6, SPOT_SECONDS = 8, SPOT_WRONG_PENALTY = 3;
+const PACE_QUESTIONS = 10, PACE_SECONDS = 25;
+let spot = null, pace = null, lastExamMode = null;
+
+function examLevel(){ return Math.max(2, topicLevels.exam || 2); }
+function hideAllScreens(){
+  document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+}
+function backToMenu(){
+  hideAllScreens();
+  document.getElementById('start-screen').classList.remove('hidden');
+  renderTopicGrid();
+  updateStartBtn();
+  updateStatsBar();
+}
+// shared: pay out coins/stars, count the day towards the streak, check badges
+async function finishExamMode(coins, stars){
+  progress.coins += coins;
+  progress.stars += stars;
+  progress.roundsPlayed = (progress.roundsPlayed || 0) + 1;
+  const streakInfo = recordPlayToday();
+  const newBadges = checkNewBadges({});
+  await saveProgress();
+  updateStatsBar();
+  return { streakInfo, newBadges };
+}
+function showExamResult(title, big, detail, coins, stars, fin, listHtml){
+  hideAllScreens();
+  document.getElementById('er-title').textContent = title;
+  document.getElementById('er-score').textContent = big;
+  document.getElementById('er-detail').textContent = detail;
+  const total = fin.newBadges.length * 5 + stars;
+  document.getElementById('er-earned').innerHTML = `<span class="pop">+${coins + (fin.streakInfo ? fin.streakInfo.bonus : 0)} 💰</span>` + (total > 0 ? `<span class="pop">+${total} ⭐</span>` : '');
+  const sn = document.getElementById('er-streak');
+  if (fin.streakInfo){
+    let t = `Day ${fin.streakInfo.streak} streak! +${fin.streakInfo.bonus} bonus 💰`;
+    if (fin.streakInfo.shieldUsed) t += ' · your rest-day shield saved the streak';
+    if (fin.streakInfo.shieldEarned) t += ' · you earned a rest-day shield!';
+    sn.textContent = t; sn.classList.remove('hidden');
+  } else sn.classList.add('hidden');
+  const toasts = document.getElementById('er-toasts');
+  toasts.innerHTML = '';
+  fin.newBadges.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'badge-toast';
+    div.textContent = `${b.icon} Badge earned: ${b.name}!`;
+    toasts.appendChild(div);
+  });
+  document.getElementById('er-list').innerHTML = listHtml;
+  document.getElementById('er-again-btn').textContent = lastExamMode === 'spot' ? 'Drill again' : 'Go again';
+  document.getElementById('exam-result-screen').classList.remove('hidden');
+}
+
+// ---------- Spot the Impossible ----------
+function startSpotDrill(){
+  lastExamMode = 'spot';
+  spot = { i: 0, score: 0, safe: 0, oops: 0, spottableFound: 0, spottableTotal: 0, q: null, ruled: new Set(), timerId: null, endsAt: 0, submitted: false, active: true };
+  hideAllScreens();
+  document.getElementById('spot-screen').classList.remove('hidden');
+  nextSpotQuestion();
+}
+function nextSpotQuestion(){
+  if (spot.i >= SPOT_QUESTIONS){ finishSpot(); return; }
+  spot.i++;
+  spot.q = qExam(examLevel());
+  spot.ruled = new Set();
+  spot.submitted = false;
+  document.getElementById('spot-q').textContent = spot.i;
+  document.getElementById('spot-score').textContent = spot.score;
+  document.getElementById('spot-question').textContent = spot.q.text;
+  document.getElementById('spot-instr').classList.remove('hidden');
+  document.getElementById('spot-reveal').classList.add('hidden');
+  document.getElementById('spot-next-btn').classList.add('hidden');
+  document.getElementById('spot-done-btn').classList.remove('hidden');
+  const box = document.getElementById('spot-options');
+  box.innerHTML = '';
+  spot.q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.dataset.val = String(opt);
+    const l = document.createElement('span'); l.className = 'opt-letter'; l.textContent = 'ABCDE'[i];
+    b.appendChild(l); b.appendChild(document.createTextNode(String(opt)));
+    b.onclick = () => {
+      if (spot.submitted) return;
+      b.blur();
+      if (spot.ruled.has(String(opt))){ spot.ruled.delete(String(opt)); b.classList.remove('ruled'); }
+      else { spot.ruled.add(String(opt)); b.classList.add('ruled'); }
+    };
+    box.appendChild(b);
+  });
+  spot.endsAt = Date.now() + SPOT_SECONDS * 1000;
+  clearInterval(spot.timerId);
+  const tick = () => {
+    const left = Math.max(0, spot.endsAt - Date.now());
+    document.getElementById('spot-timer').textContent = Math.ceil(left / 1000);
+    document.getElementById('spot-fill').style.width = (100 * left / (SPOT_SECONDS * 1000)) + '%';
+    if (left <= 0) submitSpot();
+  };
+  tick();
+  spot.timerId = setInterval(tick, 100);
+}
+function submitSpot(){
+  if (!spot || spot.submitted) return;
+  spot.submitted = true;
+  clearInterval(spot.timerId);
+  const q = spot.q;
+  let safe = 0, oops = 0, spottable = 0, spottableFound = 0;
+  const rows = [];
+  q.options.forEach((opt, i) => {
+    const key = String(opt);
+    const ruled = spot.ruled.has(key);
+    const letter = 'ABCDE'[i];
+    const btn = document.querySelectorAll('#spot-options .opt-btn')[i];
+    btn.disabled = true;
+    if (key === q.correct){
+      if (ruled){ oops++; btn.classList.add('ruled-bad'); }
+      else btn.classList.add('ruled-ok');
+      rows.push(`<div class="reveal-row"><span class="rl">${letter}</span><span class="rv">${key}</span><span class="rt"><b style="color:var(--accent2);">The correct answer.</b>${ruled ? ` <b style="color:var(--wrong);">You ruled it out — −${SPOT_WRONG_PENALTY}.</b>` : ''}</span></div>`);
+    } else {
+      const inf = q.info[key];
+      if (inf.spot) spottable++;
+      if (ruled){ safe++; if (inf.spot) spottableFound++; btn.classList.add('ruled-ok'); }
+      const status = ruled ? `<b style="color:var(--accent2);">✓ Ruled out.</b>` : `<b style="color:var(--sub);">Not ruled out.</b>`;
+      const why = inf.spot
+        ? `Spottable without calculating: ${inf.rule}`
+        : `Needs working out — it's the "${inf.label}" trap. ${inf.note}`;
+      rows.push(`<div class="reveal-row"><span class="rl">${letter}</span><span class="rv">${key}</span><span class="rt">${status} ${inf.spot ? `<i>${inf.label}.</i> ` : ''}${why}</span></div>`);
+    }
+    btn.classList.remove('ruled');
+    if (ruled) btn.style.textDecoration = 'line-through';
+  });
+  const qScore = safe - SPOT_WRONG_PENALTY * oops;
+  spot.score += qScore;
+  spot.safe += safe; spot.oops += oops;
+  spot.spottableFound += spottableFound; spot.spottableTotal += spottable;
+  document.getElementById('spot-score').textContent = spot.score;
+  document.getElementById('spot-instr').classList.add('hidden');
+  document.getElementById('spot-done-btn').classList.add('hidden');
+  const rv = document.getElementById('spot-reveal');
+  rv.innerHTML = `<div style="text-align:center; font-weight:800; margin:10px 0;">This question: ${qScore >= 0 ? '+' : ''}${qScore}</div>` + rows.join('') +
+    `<div class="trap-box" style="background:rgba(52,211,153,0.10); border-color:rgba(52,211,153,0.4);">${q.explain}</div>`;
+  rv.classList.remove('hidden');
+  const nb = document.getElementById('spot-next-btn');
+  nb.textContent = spot.i >= SPOT_QUESTIONS ? 'See results' : 'Next →';
+  nb.classList.remove('hidden');
+}
+async function finishSpot(){
+  const total = Math.max(0, spot.score);
+  const maxScore = SPOT_QUESTIONS * 4;
+  const st = progress.spotStats = Object.assign({rounds:0,best:0,safe:0,oops:0}, progress.spotStats || {});
+  st.rounds++; st.safe += spot.safe; st.oops += spot.oops;
+  if (total > st.best) st.best = total;
+  const stars = (spot.oops === 0 && spot.safe >= 16) ? 2 : 0;
+  const fin = await finishExamMode(total, stars);
+  const list = `<div class="lb-note" style="text-align:left;">You ruled out ${spot.safe} wrong answers safely` +
+    (spot.oops ? `, but ruled out the correct answer ${spot.oops} time${spot.oops>1?'s':''}.` : ' and never ruled out the right one.') +
+    ` Of the options that could be spotted without calculating, you found ${spot.spottableFound} of ${spot.spottableTotal}.</div>`;
+  showExamResult('Spot the Impossible', `${total}/${maxScore}`, 'Safe eliminations score 1 each; ruling out the right answer costs 3.', total, stars, fin, list);
+  spot = null;
+}
+document.getElementById('spot-done-btn').onclick = submitSpot;
+document.getElementById('spot-next-btn').onclick = nextSpotQuestion;
+document.getElementById('spot-quit-btn').onclick = () => { if (spot){ clearInterval(spot.timerId); spot = null; } backToMenu(); };
+
+// ---------- Exam Pace ----------
+function startPace(){
+  lastExamMode = 'pace';
+  pace = { i: 0, correct: 0, inTime: 0, results: [], q: null, shownAt: 0, timerId: null, locked: false, level: examLevel() };
+  hideAllScreens();
+  document.getElementById('pace-screen').classList.remove('hidden');
+  nextPaceQuestion();
+}
+function nextPaceQuestion(){
+  if (pace.i >= PACE_QUESTIONS){ finishPace(); return; }
+  pace.i++;
+  pace.locked = false;
+  pace.q = qExam(pace.level);
+  document.getElementById('pace-q').textContent = pace.i;
+  document.getElementById('pace-score').textContent = pace.correct;
+  document.getElementById('pace-question').textContent = pace.q.text;
+  document.getElementById('pace-feedback').textContent = '';
+  const box = document.getElementById('pace-options');
+  box.innerHTML = '';
+  pace.q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.dataset.val = String(opt);
+    const l = document.createElement('span'); l.className = 'opt-letter'; l.textContent = 'ABCDE'[i];
+    b.appendChild(l); b.appendChild(document.createTextNode(String(opt)));
+    b.onclick = () => answerPace(String(opt), b);
+    box.appendChild(b);
+  });
+  pace.shownAt = Date.now();
+  clearInterval(pace.timerId);
+  const fill = document.getElementById('pace-fill');
+  const tick = () => {
+    const left = Math.max(0, PACE_SECONDS * 1000 - (Date.now() - pace.shownAt));
+    document.getElementById('pace-timer').textContent = Math.ceil(left / 1000);
+    fill.style.width = (100 * left / (PACE_SECONDS * 1000)) + '%';
+    fill.classList.toggle('pace-fill-warn', left < 8000);
+    if (left <= 0) answerPace(null, null);
+  };
+  tick();
+  pace.timerId = setInterval(tick, 100);
+}
+function answerPace(val, btn){
+  if (!pace || pace.locked) return;
+  pace.locked = true;
+  clearInterval(pace.timerId);
+  const ms = Math.min(Date.now() - pace.shownAt, PACE_SECONDS * 1000);
+  const timedOut = val === null;
+  const q = pace.q;
+  const correct = !timedOut && val === q.correct;
+  if (btn) btn.blur();
+  document.querySelectorAll('#pace-options .opt-btn').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.val === q.correct) b.classList.add('correct');
+    else if (b === btn && !correct) b.classList.add('wrong');
+  });
+  recordTopicStat(q.statKey, correct, ms);
+  const trap = (!correct && !timedOut && q.info[val]) ? q.info[val] : null;
+  if (trap) recordTrap(trap.label);
+  if (correct) pace.correct++;
+  if (!timedOut) pace.inTime++;
+  pace.results.push({ n: pace.i, text: q.text, correct, timedOut, seconds: ms / 1000, trap, answer: val, right: q.correct, explain: q.explain });
+  document.getElementById('pace-score').textContent = pace.correct;
+  document.getElementById('pace-feedback').textContent = correct ? '✅ Correct!' : (timedOut ? `⏱ Time's up — it was ${q.correct}` : `Not quite — it was ${q.correct} · ${trap ? trap.label + ' trap' : 'wrong answer'}`);
+  setTimeout(() => { if (pace) nextPaceQuestion(); }, correct ? 700 : 1400);
+}
+async function finishPace(){
+  const r = pace;
+  const times = r.results.map(x => x.seconds);
+  const avg = times.reduce((a,b)=>a+b,0) / times.length;
+  const allInTime = r.inTime === PACE_QUESTIONS;
+  const st = progress.paceStats = Object.assign({rounds:0,bestCorrect:0,cleanRounds:0,readyRounds:0,inTime:0,answered:0}, progress.paceStats || {});
+  st.rounds++; st.inTime += r.inTime; st.answered += PACE_QUESTIONS;
+  if (r.correct > st.bestCorrect) st.bestCorrect = r.correct;
+  if (allInTime) st.cleanRounds++;
+  if (allInTime && r.correct >= 8) st.readyRounds++;
+  // gently adapt the exam question level
+  if (r.correct >= 8 && (topicLevels.exam || 2) < 5) await saveLevel('exam', (topicLevels.exam || 2) + 1);
+  else if (r.correct <= 4 && (topicLevels.exam || 2) > 2) await saveLevel('exam', (topicLevels.exam || 2) - 1);
+  const stars = (allInTime ? 3 : 0);
+  const fin = await finishExamMode(r.correct, stars);
+  const list = r.results.map(x => {
+    let d;
+    if (x.correct) d = 'Correct';
+    else if (x.timedOut) d = `Ran out of time. Answer: ${x.right}. ${x.explain || ''}`;
+    else d = `You chose ${x.answer}; answer: ${x.right}. ${x.trap ? `<b>${x.trap.label} trap</b> — ${x.trap.note}` : ''}`;
+    const slow = x.seconds > PACE_SECONDS - 0.05;
+    return `<div class="pace-q-row"><span class="pn">Q${x.n} ${x.correct ? '✅' : '❌'}</span><span class="pd">${d}</span><span class="pt"${slow ? ' style="color:var(--wrong);"' : ''}>${x.seconds.toFixed(1)}s</span></div>`;
+  }).join('');
+  showExamResult('Exam Pace', `${r.correct}/${PACE_QUESTIONS}`,
+    `${r.inTime} of ${PACE_QUESTIONS} answered inside ${PACE_SECONDS}s · average ${avg.toFixed(1)}s per question`,
+    r.correct, stars, fin, list);
+  pace = null;
+}
+document.getElementById('pace-quit-btn').onclick = () => { if (pace){ clearInterval(pace.timerId); pace = null; } backToMenu(); };
+document.getElementById('er-again-btn').onclick = () => { if (lastExamMode === 'spot') startSpotDrill(); else startPace(); };
+document.getElementById('er-menu-link').onclick = backToMenu;
 
 // ---------------- Init ----------------
 (async function init(){
